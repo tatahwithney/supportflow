@@ -1,0 +1,192 @@
+<%- include("../partials/head", { title: "Create Support Request" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Create Support Request</h2>
+
+    <p>
+        Describe your issue clearly so the support
+        team can assist you.
+    </p>
+
+    <form id="requestForm">
+        <div>
+            <label for="title">
+                Issue Title
+            </label><br>
+
+            <input
+                type="text"
+                id="title"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="description">
+                Description
+            </label><br>
+
+            <textarea
+                id="description"
+                rows="6"
+                required
+            ></textarea>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="category">
+                Category
+            </label><br>
+
+            <select id="category" required>
+                <option value="">
+                    Select a category
+                </option>
+
+                <option value="Account">
+                    Account
+                </option>
+
+                <option value="Technical">
+                    Technical
+                </option>
+
+                <option value="Billing">
+                    Billing
+                </option>
+
+                <option value="Other">
+                    Other
+                </option>
+            </select>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="priority">
+                Priority
+            </label><br>
+
+            <select id="priority">
+                <option value="low">
+                    Low
+                </option>
+
+                <option value="medium" selected>
+                    Medium
+                </option>
+
+                <option value="high">
+                    High
+                </option>
+
+                <option value="urgent">
+                    Urgent
+                </option>
+            </select>
+        </div>
+
+        <br>
+
+        <button type="submit">
+            Submit Support Request
+        </button>
+    </form>
+
+    <p id="message"></p>
+</main>
+
+<script>
+const token = getToken();
+
+if (!token || getUserRole() !== "customer") {
+    window.location.href = "/customer/login";
+}
+
+document
+    .getElementById("requestForm")
+    .addEventListener(
+        "submit",
+        async (event) => {
+            event.preventDefault();
+
+            const message =
+                document.getElementById(
+                    "message"
+                );
+
+            try {
+                const response = await fetch(
+                    "/api/requests",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            Authorization:
+                                `Bearer ${token}`
+                        },
+
+                        body: JSON.stringify({
+                            title:
+                                document.getElementById(
+                                    "title"
+                                ).value,
+
+                            description:
+                                document.getElementById(
+                                    "description"
+                                ).value,
+
+                            category:
+                                document.getElementById(
+                                    "category"
+                                ).value,
+
+                            priority:
+                                document.getElementById(
+                                    "priority"
+                                ).value
+                        })
+                    }
+                );
+
+                if (response.status === 401) {
+                    handleUnauthorized();
+                    return;
+                }
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+                    message.textContent =
+                        data.message;
+
+                    return;
+                }
+
+                message.textContent =
+                    "Support request created successfully.";
+
+                setTimeout(() => {
+                    window.location.href =
+                        "/customer/dashboard";
+                }, 800);
+            } catch (error) {
+                message.textContent =
+                    "Unable to connect to server.";
+            }
+        }
+    );
+</script>
+
+<%- include("../partials/footer") %>

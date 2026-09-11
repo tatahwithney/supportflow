@@ -9,3 +9,15 @@ TOKEN_NEW = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTlhYzYzNzdmZDc
 ADMIN-TEST = curl http://localhost:3000/api/admin-test -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTlhYzYzNzdmZDcyOWU0NmI2MWQ5YzUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3ODg4OTE1ODcsImV4cCI6MTc4ODk3Nzk4N30.lyhZ-Pwp0jiO7CIvtmM_6gfiQ-R0ymE3IjwgrgsGHPk"
 
 curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTlhYzYzNzdmZDcyOWU0NmI2MWQ5YzUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3ODg5NzE4MTgsImV4cCI6MTc4OTA1ODIxOH0.MOet8eXWY6zgih_6FDprcHjm-4N378g8Ekt_TLP11d4" http://localhost:3000/api/users
+
+curl http://localhost:3000/api/requests -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTlhYzYzNzdmZDcyOWU0NmI2MWQ5YzUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3ODg5NzE4MTgsImV4cCI6MTc4OTA1ODIxOH0.MOet8eXWY6zgih_6FDprcHjm-4N378g8Ekt_TLP11d4"
+
+curl -X POST http://localhost:3000/api/requests -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTlhYzYzNzdmZDcyOWU0NmI2MWQ5YzUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3ODg5NzE4MTgsImV4cCI6MTc4OTA1ODIxOH0.MOet8eXWY6zgih_6FDprcHjm-4N378g8Ekt_TLP11d4" -H "Content-Type: application/json" -d "{\"title\":\"Login problem\",\"description\":\"I am having difficulty accessing my account.\",\"category\":\"Account\",\"priority\":\"high\"}"
+
+{"message":"Support request created successfully","request":{"title":"Login problem","description":"I am having difficulty accessing my account.","customer":"6a9ac6377fd729e46b61d9c5","assignedAgent":null,"status":"open","priority":"high","category":"Account","_id":"6aa194e93a0e12e8f4eaa22c","createdAt":"2026-09-09T17:18:33.839Z","updatedAt":"2026-09-09T17:18:33.839Z","__v":0}}
+
+curl -X POST http://localhost:3000/api/requests/6aa194e93a0e12e8f4eaa22c/responses -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTlhYzYzNzdmZDcyOWU0NmI2MWQ5YzUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3ODg5NzE4MTgsImV4cCI6MTc4OTA1ODIxOH0.MOet8eXWY6zgih_6FDprcHjm-4N378g8Ekt_TLP11d4" -H "Content-Type: application/json" -d "{\"message\":\"I am following up on this support request.\"}"
+
+curl http://localhost:3000/api/requests/6aa194e93a0e12e8f4eaa22c/responses -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTlhYzYzNzdmZDcyOWU0NmI2MWQ5YzUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3ODg5NzE4MTgsImV4cCI6MTc4OTA1ODIxOH0.MOet8eXWY6zgih_6FDprcHjm-4N378g8Ekt_TLP11d4"
+
+curl http://localhost:3000/api/requests -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTlhYzYzNzdmZDcyOWU0NmI2MWQ5YzUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3ODg5NzE4MTgsImV4cCI6MTc4OTA1ODIxOH0.MOet8eXWY6zgih_6FDprcHjm-4N378g8Ekt_TLP11d4"

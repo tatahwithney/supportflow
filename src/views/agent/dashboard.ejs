@@ -1,0 +1,115 @@
+<%- include("../partials/head", { title: "Agent Dashboard" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Support Agent Dashboard</h2>
+
+    <p>
+        View and manage support requests assigned
+        to you.
+    </p>
+
+    <h3>Assigned Requests</h3>
+
+    <div id="requests">
+        <p>Loading requests...</p>
+    </div>
+
+    <p id="message"></p>
+</main>
+
+<script>
+const token = getToken();
+
+if (!token || getUserRole() !== "agent") {
+    window.location.href = "/staff/login";
+}
+
+async function loadRequests() {
+    try {
+        const response = await fetch(
+            "/api/requests",
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            document.getElementById(
+                "message"
+            ).textContent = data.message;
+
+            return;
+        }
+
+        const container =
+            document.getElementById(
+                "requests"
+            );
+
+        if (data.length === 0) {
+            container.innerHTML =
+                "<p>No requests are currently assigned to you.</p>";
+
+            return;
+        }
+
+        container.innerHTML = data.map(
+            request => `
+                <article>
+                    <h4>
+                        ${request.title}
+                    </h4>
+
+                    <p>
+                        ${request.description}
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+                        ${request.status}
+                    </p>
+
+                    <p>
+                        <strong>Priority:</strong>
+                        ${request.priority}
+                    </p>
+
+                    <p>
+                        <strong>Customer:</strong>
+                        ${request.customer?.name || "Unknown"}
+                    </p>
+
+                    <a
+                        href="/agent/requests/${request._id}"
+                    >
+                        Open Request
+                    </a>
+
+                    <hr>
+                </article>
+            `
+        ).join("");
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            "Unable to load requests.";
+    }
+}
+
+loadRequests();
+</script>
+
+<%- include("../partials/footer") %>

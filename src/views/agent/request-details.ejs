@@ -1,0 +1,325 @@
+<%- include("../partials/head", { title: "Agent Request Details" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Support Request</h2>
+
+    <div id="request">
+        <p>Loading request...</p>
+    </div>
+
+    <hr>
+
+    <h3>Conversation</h3>
+
+    <div id="responses">
+        <p>Loading responses...</p>
+    </div>
+
+    <hr>
+
+    <h3>Update Status</h3>
+
+    <form id="statusForm">
+        <select id="status">
+            <option value="open">
+                Open
+            </option>
+
+            <option value="in-progress">
+                In Progress
+            </option>
+
+            <option value="resolved">
+                Resolved
+            </option>
+
+            <option value="closed">
+                Closed
+            </option>
+        </select>
+
+        <button type="submit">
+            Update Status
+        </button>
+    </form>
+
+    <hr>
+
+    <h3>Send Response</h3>
+
+    <form id="responseForm">
+        <textarea
+            id="responseMessage"
+            rows="5"
+            required
+        ></textarea>
+
+        <br><br>
+
+        <button type="submit">
+            Send Response
+        </button>
+    </form>
+
+    <p id="message"></p>
+
+    <p>
+        <a href="/agent/dashboard">
+            Back to Agent Dashboard
+        </a>
+    </p>
+</main>
+
+<script>
+const token = getToken();
+
+const requestId =
+    "<%= requestId %>";
+
+if (!token || getUserRole() !== "agent") {
+    window.location.href = "/staff/login";
+}
+
+async function loadRequest() {
+    const response = await fetch(
+        `/api/requests/${requestId}`,
+        {
+            headers: {
+                Authorization:
+                    `Bearer ${token}`
+            }
+        }
+    );
+
+    if (response.status === 401) {
+        handleUnauthorized();
+        return;
+    }
+
+    const data =
+        await response.json();
+
+    if (!response.ok) {
+        document.getElementById(
+            "message"
+        ).textContent = data.message;
+
+        return;
+    }
+
+    document.getElementById(
+        "status"
+    ).value = data.status;
+
+    document.getElementById(
+        "request"
+    ).innerHTML = `
+        <h3>${data.title}</h3>
+
+        <p>
+            ${data.description}
+        </p>
+
+        <p>
+            <strong>Customer:</strong>
+            ${data.customer?.name || "Unknown"}
+        </p>
+
+        <p>
+            <strong>Email:</strong>
+            ${data.customer?.email || "Unknown"}
+        </p>
+
+        <p>
+            <strong>Priority:</strong>
+            ${data.priority}
+        </p>
+
+        <p>
+            <strong>Category:</strong>
+            ${data.category}
+        </p>
+
+        <p>
+            <strong>Status:</strong>
+            ${data.status}
+        </p>
+    `;
+}
+
+async function loadResponses() {
+    const response = await fetch(
+        `/api/requests/${requestId}/responses`,
+        {
+            headers: {
+                Authorization:
+                    `Bearer ${token}`
+            }
+        }
+    );
+
+    if (response.status === 401) {
+        handleUnauthorized();
+        return;
+    }
+
+    const data =
+        await response.json();
+
+    if (!response.ok) {
+        document.getElementById(
+            "responses"
+        ).textContent = data.message;
+
+        return;
+    }
+
+    if (data.length === 0) {
+        document.getElementById(
+            "responses"
+        ).innerHTML =
+            "<p>No responses yet.</p>";
+
+        return;
+    }
+
+    document.getElementById(
+        "responses"
+    ).innerHTML = data.map(
+        item => `
+            <article>
+                <strong>
+                    ${item.sender.name}
+                </strong>
+
+                <p>
+                    ${item.message}
+                </p>
+
+                <small>
+                    ${new Date(
+                        item.createdAt
+                    ).toLocaleString()}
+                </small>
+
+                <hr>
+            </article>
+        `
+    ).join("");
+}
+
+document
+    .getElementById("statusForm")
+    .addEventListener(
+        "submit",
+        async (event) => {
+            event.preventDefault();
+
+            const message =
+                document.getElementById(
+                    "message"
+                );
+
+            const response =
+                await fetch(
+                    `/api/requests/${requestId}/status`,
+                    {
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            Authorization:
+                                `Bearer ${token}`
+                        },
+
+                        body: JSON.stringify({
+                            status:
+                                document.getElementById(
+                                    "status"
+                                ).value
+                        })
+                    }
+                );
+
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+
+            const data =
+                await response.json();
+
+            message.textContent =
+                data.message;
+        }
+    );
+
+document
+    .getElementById("responseForm")
+    .addEventListener(
+        "submit",
+        async (event) => {
+            event.preventDefault();
+
+            const message =
+                document.getElementById(
+                    "message"
+                );
+
+            const response =
+                await fetch(
+                    `/api/requests/${requestId}/responses`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            Authorization:
+                                `Bearer ${token}`
+                        },
+
+                        body: JSON.stringify({
+                            message:
+                                document.getElementById(
+                                    "responseMessage"
+                                ).value
+                        })
+                    }
+                );
+
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                message.textContent =
+                    data.message;
+
+                return;
+            }
+
+            document.getElementById(
+                "responseMessage"
+            ).value = "";
+
+            message.textContent =
+                "Response added successfully.";
+
+            loadResponses();
+        }
+    );
+
+loadRequest();
+loadResponses();
+</script>
+
+<%- include("../partials/footer") %>

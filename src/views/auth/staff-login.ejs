@@ -1,0 +1,154 @@
+<%- include("../partials/head", { title: "Staff Login" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Staff Login</h2>
+
+    <p>
+        Select your role before logging in.
+    </p>
+
+    <form id="loginForm">
+        <fieldset>
+            <legend>Login As</legend>
+
+            <label>
+                <input
+                    type="radio"
+                    name="role"
+                    value="agent"
+                    checked
+                >
+                Support Agent
+            </label>
+
+            <br>
+
+            <label>
+                <input
+                    type="radio"
+                    name="role"
+                    value="admin"
+                >
+                Administrator
+            </label>
+        </fieldset>
+
+        <br>
+
+        <div>
+            <label for="email">Email</label><br>
+            <input
+                type="email"
+                id="email"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="password">Password</label><br>
+            <input
+                type="password"
+                id="password"
+                required
+            >
+        </div>
+
+        <br>
+
+        <button type="submit">
+            Staff Login
+        </button>
+    </form>
+
+    <p id="message"></p>
+
+    <p>
+        Don't have a staff account?
+        <a href="/staff/register">
+            Staff Registration
+        </a>
+    </p>
+
+    <p>
+        Customer?
+        <a href="/customer/login">
+            Customer Login
+        </a>
+    </p>
+</main>
+
+<script>
+document
+    .getElementById("loginForm")
+    .addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const message =
+            document.getElementById("message");
+
+        const email =
+            document.getElementById("email").value;
+
+        const password =
+            document.getElementById("password").value;
+
+        const role =
+            document.querySelector(
+                'input[name="role"]:checked'
+            ).value;
+
+        try {
+            const response = await fetch(
+                "/api/auth/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        role
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                message.textContent =
+                    data.message;
+                return;
+            }
+
+            localStorage.setItem(
+                "token",
+                data.token
+            );
+
+            localStorage.setItem(
+                "authPortal",
+                "staff"
+            );
+
+            if (data.user.role === "agent") {
+                window.location.href =
+                    "/agent/dashboard";
+            } else if (
+                data.user.role === "admin"
+            ) {
+                window.location.href =
+                    "/admin/dashboard";
+            }
+        } catch (error) {
+            message.textContent =
+                "Unable to connect to server.";
+        }
+    });
+</script>
+
+<%- include("../partials/footer") %>

@@ -1,0 +1,115 @@
+<%- include("../partials/head", { title: "Customer Dashboard" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Customer Dashboard</h2>
+
+    <p>
+        Create and track your support requests.
+    </p>
+
+    <p>
+        <a href="/customer/request/new">
+            Create New Support Request
+        </a>
+    </p>
+
+    <h3>My Support Requests</h3>
+
+    <div id="requests">
+        <p>Loading requests...</p>
+    </div>
+
+    <p id="message"></p>
+</main>
+
+<script>
+const token = getToken();
+
+if (!token || getUserRole() !== "customer") {
+    window.location.href = "/customer/login";
+}
+
+async function loadRequests() {
+    try {
+        const response = await fetch(
+            "/api/requests",
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            document.getElementById(
+                "message"
+            ).textContent = data.message;
+
+            return;
+        }
+
+        const container =
+            document.getElementById("requests");
+
+        if (data.length === 0) {
+            container.innerHTML =
+                "<p>You have no support requests.</p>";
+
+            return;
+        }
+
+        container.innerHTML = data.map(
+            request => `
+                <article>
+                    <h4>${request.title}</h4>
+
+                    <p>
+                        ${request.description}
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+                        ${request.status}
+                    </p>
+
+                    <p>
+                        <strong>Priority:</strong>
+                        ${request.priority}
+                    </p>
+
+                    <p>
+                        <strong>Category:</strong>
+                        ${request.category}
+                    </p>
+
+                    <a
+                        href="/customer/requests/${request._id}"
+                    >
+                        View Request
+                    </a>
+
+                    <hr>
+                </article>
+            `
+        ).join("");
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            "Unable to load support requests.";
+    }
+}
+
+loadRequests();
+</script>
+
+<%- include("../partials/footer") %>

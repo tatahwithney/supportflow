@@ -1,0 +1,173 @@
+<%- include("../partials/head", { title: "Admin Dashboard" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Administrator Dashboard</h2>
+
+    <p>
+        Manage SupportFlow users and support requests.
+    </p>
+
+    <section>
+    <h3>System Overview</h3>
+
+    <div>
+        <article>
+            <h4>Total Users</h4>
+            <p id="totalUsers">Loading...</p>
+        </article>
+
+        <article>
+            <h4>Active Users</h4>
+            <p id="activeUsers">Loading...</p>
+        </article>
+
+        <article>
+            <h4>Total Requests</h4>
+            <p id="totalRequests">Loading...</p>
+        </article>
+
+        <article>
+            <h4>Open</h4>
+            <p id="openRequests">Loading...</p>
+        </article>
+
+        <article>
+            <h4>In Progress</h4>
+            <p id="inProgressRequests">Loading...</p>
+        </article>
+
+        <article>
+            <h4>Resolved</h4>
+            <p id="resolvedRequests">Loading...</p>
+        </article>
+
+        <article>
+            <h4>Closed</h4>
+            <p id="closedRequests">Loading...</p>
+        </article>
+    </div>
+</section>
+    <hr>
+
+    <section>
+        <h3>Administration</h3>
+
+        <p>
+            <a href="/admin/users">
+                Manage Users
+            </a>
+        </p>
+
+        <p>
+            <a href="/admin/requests">
+                Manage Support Requests
+            </a>
+        </p>
+    </section>
+
+    <p id="message"></p>
+</main>
+
+<script>
+const token = getToken();
+
+if (!token || getUserRole() !== "admin") {
+    window.location.href = "/staff/login";
+}
+
+async function loadDashboard() {
+    try {
+        const headers = {
+            Authorization: `Bearer ${token}`
+        };
+
+        const usersResponse = await fetch(
+            "/api/users",
+            { headers }
+        );
+
+        if (usersResponse.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const users = await usersResponse.json();
+
+        if (!usersResponse.ok) {
+            throw new Error(users.message);
+        }
+
+        const requestsResponse = await fetch(
+            "/api/requests",
+            { headers }
+        );
+
+        if (requestsResponse.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const requests =
+            await requestsResponse.json();
+
+        if (!requestsResponse.ok) {
+            throw new Error(requests.message);
+        }
+
+        document.getElementById(
+            "totalUsers"
+        ).textContent = users.length;
+
+        document.getElementById(
+            "activeUsers"
+        ).textContent =
+            users.filter(user => user.isActive).length;
+
+        document.getElementById(
+            "totalRequests"
+        ).textContent = requests.length;
+
+        document.getElementById(
+            "openRequests"
+        ).textContent =
+            requests.filter(
+                request => request.status === "open"
+            ).length;
+
+        document.getElementById(
+            "inProgressRequests"
+        ).textContent =
+            requests.filter(
+                request =>
+                    request.status === "in-progress"
+            ).length;
+
+        document.getElementById(
+            "resolvedRequests"
+        ).textContent =
+            requests.filter(
+                request =>
+                    request.status === "resolved"
+            ).length;
+
+        document.getElementById(
+            "closedRequests"
+        ).textContent =
+            requests.filter(
+                request =>
+                    request.status === "closed"
+            ).length;
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            error.message ||
+            "Unable to load dashboard.";
+    }
+}
+
+loadDashboard();
+</script>
+
+<%- include("../partials/footer") %>

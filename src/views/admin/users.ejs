@@ -1,0 +1,256 @@
+<%- include("../partials/head", { title: "User Management" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>User Management</h2>
+
+    <p>
+        View and manage SupportFlow user accounts.
+    </p>
+
+    <div id="users">
+        <p>Loading users...</p>
+    </div>
+
+    <p id="message"></p>
+
+    <p>
+        <a href="/admin/dashboard">
+            Back to Admin Dashboard
+        </a>
+    </p>
+</main>
+
+<script>
+const token = getToken();
+
+if (!token || getUserRole() !== "admin") {
+    window.location.href = "/staff/login";
+}
+
+async function loadUsers() {
+    try {
+        const response = await fetch(
+            "/api/users",
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const users = await response.json();
+
+        if (!response.ok) {
+            document.getElementById(
+                "message"
+            ).textContent = users.message;
+
+            return;
+        }
+
+        const container =
+            document.getElementById("users");
+
+        if (users.length === 0) {
+            container.innerHTML =
+                "<p>No users found.</p>";
+
+            return;
+        }
+
+        container.innerHTML = `
+            <table border="1" cellpadding="8">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${users.map(user => `
+                        <tr>
+                            <td>${user.name}</td>
+
+                            <td>${user.email}</td>
+
+                            <td>
+                                <select
+                                    id="role-${user._id}"
+                                >
+                                    <option
+                                        value="customer"
+                                        ${user.role === "customer" ? "selected" : ""}
+                                    >
+                                        Customer
+                                    </option>
+
+                                    <option
+                                        value="agent"
+                                        ${user.role === "agent" ? "selected" : ""}
+                                    >
+                                        Agent
+                                    </option>
+
+                                    <option
+                                        value="manager"
+                                        ${user.role === "manager" ? "selected" : ""}
+                                    >
+                                        Manager
+                                    </option>
+
+                                    <option
+                                        value="admin"
+                                        ${user.role === "admin" ? "selected" : ""}
+                                    >
+                                        Admin
+                                    </option>
+                                </select>
+                            </td>
+
+                            <td>
+                                ${user.isActive
+                                    ? "Active"
+                                    : "Inactive"}
+                            </td>
+
+                            <td>
+                                <button
+                                    onclick="updateUser('${user._id}')"
+                                >
+                                    Save
+                                </button>
+
+                                ${
+                                    user.isActive
+                                    ? `
+                                        <button
+                                            onclick="deactivateUser('${user._id}')"
+                                        >
+                                            Deactivate
+                                        </button>
+                                    `
+                                    : ""
+                                }
+                            </td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        `;
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            "Unable to load users.";
+    }
+}
+
+async function updateUser(userId) {
+    const role =
+        document.getElementById(
+            `role-${userId}`
+        ).value;
+
+    try {
+        const response = await fetch(
+            `/api/users/${userId}`,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+                    Authorization:
+                        `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+                    role
+                })
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        document.getElementById(
+            "message"
+        ).textContent = data.message;
+
+        if (response.ok) {
+            loadUsers();
+        }
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            "Unable to update user.";
+    }
+}
+
+async function deactivateUser(userId) {
+    const confirmed = confirm(
+        "Deactivate this user?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/users/${userId}`,
+            {
+                method: "DELETE",
+
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        document.getElementById(
+            "message"
+        ).textContent = data.message;
+
+        if (response.ok) {
+            loadUsers();
+        }
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            "Unable to deactivate user.";
+    }
+}
+
+loadUsers();
+</script>
+
+<%- include("../partials/footer") %>

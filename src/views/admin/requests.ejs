@@ -1,0 +1,358 @@
+<%- include("../partials/head", { title: "Request Management" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Support Request Management</h2>
+
+    <p id="message">Loading requests...</p>
+
+    <div id="requests"></div>
+
+    <p>
+        <a href="/admin/dashboard">
+            Back to Admin Dashboard
+        </a>
+    </p>
+</main>
+
+<script>
+const token = getToken();
+
+if (!token || getUserRole() !== "admin") {
+    window.location.href = "/staff/login";
+}
+
+let agents = [];
+
+async function loadAgents() {
+    const response = await fetch("/api/users", {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    if (response.status === 401) {
+        handleUnauthorized();
+        return;
+    }
+
+    const users = await response.json();
+
+    if (!response.ok) {
+        throw new Error(users.message);
+    }
+
+    agents = users.filter(
+        user =>
+            user.role === "agent" &&
+            user.isActive
+    );
+}
+
+async function loadRequests() {
+    try {
+        await loadAgents();
+
+        const response = await fetch(
+            "/api/requests",
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const requests =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                requests.message
+            );
+        }
+
+        const container =
+            document.getElementById(
+                "requests"
+            );
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+        if (requests.length === 0) {
+            message.textContent =
+                "No support requests found.";
+
+            container.innerHTML = "";
+            return;
+        }
+
+        message.textContent = "";
+
+        container.innerHTML =
+            requests.map(request => `
+                <article>
+                    <h3>
+                        ${request.title}
+                    </h3>
+
+                    <p>
+                        ${request.description}
+                    </p>
+
+                    <p>
+                        <strong>Customer:</strong>
+                        ${
+                            request.customer?.name ||
+                            "Unknown"
+                        }
+                    </p>
+
+                    <p>
+                        <strong>Category:</strong>
+                        ${request.category}
+                    </p>
+
+                    <p>
+                        <strong>Priority:</strong>
+                        ${request.priority}
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+                        ${request.status}
+                    </p>
+
+                    <p>
+                        <strong>Assigned Agent:</strong>
+                        ${
+                            request.assignedAgent?.name ||
+                            "Not assigned"
+                        }
+                    </p>
+
+                    <label>
+                        Assign Agent:
+                    </label>
+
+                    <select
+                        id="agent-${request._id}"
+                    >
+                        <option value="">
+                            Select agent
+                        </option>
+
+                        ${agents.map(agent => `
+                            <option
+                                value="${agent._id}"
+                                ${
+                                    request.assignedAgent?._id ===
+                                    agent._id
+                                        ? "selected"
+                                        : ""
+                                }
+                            >
+                                ${agent.name}
+                            </option>
+                        `).join("")}
+                    </select>
+
+                    <button
+                        onclick="assignAgent('${request._id}')"
+                    >
+                        Assign
+                    </button>
+
+                    <br><br>
+
+                    <label>
+                        Update Status:
+                    </label>
+
+                    <select
+                        id="status-${request._id}"
+                    >
+                        <option
+                            value="open"
+                            ${
+                                request.status === "open"
+                                    ? "selected"
+                                    : ""
+                            }
+                        >
+                            Open
+                        </option>
+
+                        <option
+                            value="in-progress"
+                            ${
+                                request.status ===
+                                "in-progress"
+                                    ? "selected"
+                                    : ""
+                            }
+                        >
+                            In Progress
+                        </option>
+
+                        <option
+                            value="resolved"
+                            ${
+                                request.status ===
+                                "resolved"
+                                    ? "selected"
+                                    : ""
+                            }
+                        >
+                            Resolved
+                        </option>
+
+                        <option
+                            value="closed"
+                            ${
+                                request.status === "closed"
+                                    ? "selected"
+                                    : ""
+                            }
+                        >
+                            Closed
+                        </option>
+                    </select>
+
+                    <button
+                        onclick="updateStatus('${request._id}')"
+                    >
+                        Update Status
+                    </button>
+
+                    <hr>
+                </article>
+            `).join("");
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            error.message ||
+            "Unable to load requests.";
+    }
+}
+
+async function assignAgent(requestId) {
+    const agentId =
+        document.getElementById(
+            `agent-${requestId}`
+        ).value;
+
+    if (!agentId) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            "Please select an agent.";
+
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/requests/${requestId}/assign`,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+                    Authorization:
+                        `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+                    agentId
+                })
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        document.getElementById(
+            "message"
+        ).textContent = data.message;
+
+        if (response.ok) {
+            loadRequests();
+        }
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            "Unable to assign agent.";
+    }
+}
+
+async function updateStatus(requestId) {
+    const status =
+        document.getElementById(
+            `status-${requestId}`
+        ).value;
+
+    try {
+        const response = await fetch(
+            `/api/requests/${requestId}/status`,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+                    Authorization:
+                        `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+                    status
+                })
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        document.getElementById(
+            "message"
+        ).textContent = data.message;
+
+        if (response.ok) {
+            loadRequests();
+        }
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            "Unable to update status.";
+    }
+}
+
+loadRequests();
+</script>
+
+<%- include("../partials/footer") %>

@@ -1,0 +1,107 @@
+<%- include("../partials/head", { title: "Customer Login" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Customer Login</h2>
+
+    <p>Login to create and track your support requests.</p>
+
+    <form id="loginForm">
+        <div>
+            <label for="email">Email</label><br>
+            <input
+                type="email"
+                id="email"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="password">Password</label><br>
+            <input
+                type="password"
+                id="password"
+                required
+            >
+        </div>
+
+        <br>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <p id="message"></p>
+
+    <p>
+        Don't have a customer account?
+        <a href="/customer/register">Create one</a>
+    </p>
+
+    <p>
+        Staff member?
+        <a href="/staff/login">Staff Login</a>
+    </p>
+</main>
+
+<script>
+document
+    .getElementById("loginForm")
+    .addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const message =
+            document.getElementById("message");
+
+        const email =
+            document.getElementById("email").value;
+
+        const password =
+            document.getElementById("password").value;
+
+        try {
+            const response = await fetch(
+                "/api/auth/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        role: "customer"
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                message.textContent =
+                    data.message;
+                return;
+            }
+
+            localStorage.setItem(
+                "token",
+                data.token
+            );
+
+            localStorage.setItem(
+                "authPortal",
+                "customer"
+            );
+
+            window.location.href =
+                "/customer/dashboard";
+        } catch (error) {
+            message.textContent =
+                "Unable to connect to server.";
+        }
+    });
+</script>
+
+<%- include("../partials/footer") %>

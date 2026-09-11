@@ -1,13 +1,158 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SupportFlow</title>
-</head>
-<body>
-    <h1>SupportFlow</h1>
-    <p>Support Management System</p>
-    <p>Application is running successfully.</p>
-</body>
-</html>
+<%- include("partials/head", { title: "SupportFlow" }) %>
+<%- include("partials/header") %>
+
+<main>
+    <section>
+        <h1>SupportFlow</h1>
+
+        <p>
+            A support request management system that
+            connects customers with support teams.
+        </p>
+
+        <div id="guestHome">
+            <h2>Welcome to SupportFlow</h2>
+
+            <p>
+                Create and track support requests or
+                access the staff management portal.
+            </p>
+
+            <section>
+                <h3>Customer Portal</h3>
+
+                <p>
+                    Create support requests, track their
+                    status, and communicate with support
+                    agents.
+                </p>
+
+                <a href="/customer/login">
+                    Customer Login
+                </a>
+
+                |
+
+                <a href="/customer/register">
+                    Create Customer Account
+                </a>
+            </section>
+
+            <section>
+                <h3>Staff Portal</h3>
+
+                <p>
+                    Support agents and administrators can
+                    manage requests and support operations.
+                </p>
+
+                <a href="/staff/login">
+                    Staff Login
+                </a>
+
+                |
+
+                <a href="/staff/register">
+                    Staff Registration
+                </a>
+            </section>
+        </div>
+
+        <div id="customerHome" hidden>
+            <h2>Customer Portal</h2>
+
+            <p>
+                Manage your support requests and
+                communicate with the support team.
+            </p>
+
+            <p>
+                <a href="/customer/dashboard">
+                    Go to Customer Dashboard
+                </a>
+            </p>
+
+            <p>
+                <a href="/customer/request/new">
+                    Create Support Request
+                </a>
+            </p>
+        </div>
+
+        <div id="agentHome" hidden>
+            <h2>Agent Portal</h2>
+
+            <p>
+                View your assigned support requests,
+                update their status, and respond to
+                customers.
+            </p>
+
+            <p>
+                <a href="/agent/dashboard">
+                    Go to Agent Dashboard
+                </a>
+            </p>
+        </div>
+
+        <div id="adminHome" hidden>
+            <h2>Administrator Portal</h2>
+
+            <p>
+                Manage users, support requests, assignments,
+                and system activity.
+            </p>
+
+            <p>
+                <a href="/admin/dashboard">
+                    Go to Admin Dashboard
+                </a>
+            </p>
+
+            <p>
+                <a href="/admin/users">
+                    Manage Users
+                </a>
+            </p>
+
+            <p>
+                <a href="/admin/requests">
+                    Manage Support Requests
+                </a>
+            </p>
+        </div>
+    </section>
+</main>
+
+<script>
+const role = getUserRole();
+
+const guestHome =
+    document.getElementById("guestHome");
+
+const customerHome =
+    document.getElementById("customerHome");
+
+const agentHome =
+    document.getElementById("agentHome");
+
+const adminHome =
+    document.getElementById("adminHome");
+
+if (role === "customer") {
+    guestHome.hidden = true;
+    customerHome.hidden = false;
+}
+
+if (role === "agent") {
+    guestHome.hidden = true;
+    agentHome.hidden = false;
+}
+
+if (role === "admin") {
+    guestHome.hidden = true;
+    adminHome.hidden = false;
+}
+</script>
+
+<%- include("partials/footer") %>

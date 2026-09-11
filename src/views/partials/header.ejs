@@ -1,0 +1,101 @@
+<header>
+    <nav>
+        <a href="/">
+            <strong>SupportFlow</strong>
+        </a>
+
+        <span id="guestNav">
+            <a href="/customer/login">
+                Customer Login
+            </a>
+
+            <a href="/customer/register">
+                Register
+            </a>
+
+            <a href="/staff/login">
+                Staff Login
+            </a>
+
+            <a href="/staff/register">
+                Staff Registration
+            </a>
+        </span>
+
+        <span id="customerNav" hidden>
+            <a href="/customer/dashboard">
+                Dashboard
+            </a>
+
+            <a href="/customer/request/new">
+                New Request
+            </a>
+
+            <button onclick="logout()">
+                Logout
+            </button>
+        </span>
+
+        <span id="agentNav" hidden>
+            <a href="/agent/dashboard">
+                Dashboard
+            </a>
+
+            <button onclick="logout()">
+                Logout
+            </button>
+        </span>
+
+        <span id="adminNav" hidden>
+            <a href="/admin/dashboard">
+                Dashboard
+            </a>
+
+            <a href="/admin/users">
+                Users
+            </a>
+
+            <a href="/admin/requests">
+                Requests
+            </a>
+
+            <button onclick="logout()">
+                Logout
+            </button>
+        </span>
+    </nav>
+</header>
+
+<script>
+const currentRole = getUserRole();
+
+if (currentRole === "customer") {
+    document.getElementById(
+        "guestNav"
+    ).hidden = true;
+
+    document.getElementById(
+        "customerNav"
+    ).hidden = false;
+}
+
+if (currentRole === "agent") {
+    document.getElementById(
+        "guestNav"
+    ).hidden = true;
+
+    document.getElementById(
+        "agentNav"
+    ).hidden = false;
+}
+
+if (currentRole === "admin") {
+    document.getElementById(
+        "guestNav"
+    ).hidden = true;
+
+    document.getElementById(
+        "adminNav"
+    ).hidden = false;
+}
+</script>

@@ -1,0 +1,253 @@
+<%- include("../partials/head", { title: "Request Details" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Support Request Details</h2>
+
+    <div id="request">
+        <p>Loading request...</p>
+    </div>
+
+    <hr>
+
+    <h3>Conversation History</h3>
+
+    <div id="responses">
+        <p>Loading responses...</p>
+    </div>
+
+    <hr>
+
+    <h3>Send Response</h3>
+
+    <form id="responseForm">
+        <label for="responseMessage">
+            Your message
+        </label><br>
+
+        <textarea
+            id="responseMessage"
+            rows="5"
+            required
+        ></textarea>
+
+        <br><br>
+
+        <button type="submit">
+            Send Response
+        </button>
+    </form>
+
+    <p id="message"></p>
+
+    <p>
+        <a href="/customer/dashboard">
+            Back to Dashboard
+        </a>
+    </p>
+</main>
+
+<script>
+const token = getToken();
+
+const requestId =
+    "<%= requestId %>";
+
+if (!token || getUserRole() !== "customer") {
+    window.location.href = "/customer/login";
+}
+
+async function loadRequest() {
+    try {
+        const response = await fetch(
+            `/api/requests/${requestId}`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            document.getElementById(
+                "message"
+            ).textContent = data.message;
+
+            return;
+        }
+
+        document.getElementById(
+            "request"
+        ).innerHTML = `
+            <h3>${data.title}</h3>
+
+            <p>
+                ${data.description}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+                ${data.status}
+            </p>
+
+            <p>
+                <strong>Priority:</strong>
+                ${data.priority}
+            </p>
+
+            <p>
+                <strong>Category:</strong>
+                ${data.category}
+            </p>
+        `;
+    } catch (error) {
+        document.getElementById(
+            "message"
+        ).textContent =
+            "Unable to load request.";
+    }
+}
+
+async function loadResponses() {
+    try {
+        const response = await fetch(
+            `/api/requests/${requestId}/responses`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            document.getElementById(
+                "responses"
+            ).textContent = data.message;
+
+            return;
+        }
+
+        if (data.length === 0) {
+            document.getElementById(
+                "responses"
+            ).innerHTML =
+                "<p>No responses yet.</p>";
+
+            return;
+        }
+
+        document.getElementById(
+            "responses"
+        ).innerHTML = data.map(
+            item => `
+                <article>
+                    <strong>
+                        ${item.sender.name}
+                    </strong>
+
+                    <p>
+                        ${item.message}
+                    </p>
+
+                    <small>
+                        ${new Date(
+                            item.createdAt
+                        ).toLocaleString()}
+                    </small>
+
+                    <hr>
+                </article>
+            `
+        ).join("");
+    } catch (error) {
+        document.getElementById(
+            "responses"
+        ).textContent =
+            "Unable to load responses.";
+    }
+}
+
+document
+    .getElementById("responseForm")
+    .addEventListener(
+        "submit",
+        async (event) => {
+            event.preventDefault();
+
+            const message =
+                document.getElementById(
+                    "message"
+                );
+
+            const response =
+                await fetch(
+                    `/api/requests/${requestId}/responses`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            Authorization:
+                                `Bearer ${token}`
+                        },
+
+                        body: JSON.stringify({
+                            message:
+                                document.getElementById(
+                                    "responseMessage"
+                                ).value
+                        })
+                    }
+                );
+
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                message.textContent =
+                    data.message;
+
+                return;
+            }
+
+            document.getElementById(
+                "responseMessage"
+            ).value = "";
+
+            message.textContent =
+                "Response added successfully.";
+
+            loadResponses();
+        }
+    );
+
+loadRequest();
+loadResponses();
+</script>
+
+<%- include("../partials/footer") %>
