@@ -1,5 +1,44 @@
+/*::before, *::after, *
+{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: cambria !important;
+    color: white;
+    background-color: black;
+}
+body
+{
+    width: 100%;
+    padding:0 5px;
+}
+main
+{
+    padding-bottom: 10%;
+}
+footer
+{
+    height: 10%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: chartreuse;
+}
+header
+{
+    color: chartreuse !important;
+}*/
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: cambria !important;
 }
 
 body {
@@ -12,6 +51,10 @@ body {
 header {
     background: #1f2937;
     padding: 16px 30px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }
 
 nav {
@@ -47,6 +90,10 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+button[content="Logout"]
+{
+    background-color: red;
 }
 
 main {
@@ -131,7 +178,30 @@ hr {
     border-radius: 4px;
     background: #e5e7eb;
 }
-
+footer
+{
+    height: 10%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #1f2937;
+    font-weight: bolder;
+    color: white;
+}
+button, a
+{
+    transition: ease-in-out all 0.85s;
+}
+button:hover, a:hover
+{
+    scale: 1.01;
+}
 .message {
     margin: 15px 0;
     font-weight: bold;
@@ -153,4 +223,7 @@ hr {
     table {
         font-size: 14px;
     }
+}
+body>hr{
+    display: none;
 }
