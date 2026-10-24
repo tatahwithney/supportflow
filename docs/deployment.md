@@ -148,3 +148,21 @@ The repository contains `.env.example` with placeholder values for development c
 SupportFlow has been successfully deployed to Render and connected to MongoDB Atlas.
 
 The production environment is available for live application testing and demonstration.
+
+
+## Multi-Tenant Release Checklist
+
+Before deploying the multi-tenant version:
+
+1. Confirm `.env` remains untracked and production secrets are configured in Render.
+2. Back up the MongoDB Atlas `supportflow` database.
+3. Push the reviewed source to the configured deployment branch.
+4. Confirm the Render build and startup logs show a successful MongoDB connection.
+5. Confirm the legacy data migration runs if legacy records lack organization references.
+6. Register two test organizations and one administrator in each.
+7. Register separate customers and staff in each organization.
+8. Verify each organization's users, requests, assignments, and responses are isolated.
+9. Attempt cross-organization user/request/response lookups and confirm no data is returned.
+10. Re-test existing login and role permissions after users sign in again, because old JWTs do not contain an organization ID.
+
+Do not describe the multi-tenant production deployment as verified until these checks have passed.

@@ -1,206 +1,173 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Organization = require("../models/organization");
+
+const publicUser = (user, organization) => ({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    organization: organization
+        ? { id: organization._id, name: organization.name, slug: organization.slug }
+        : undefined
+});
 
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, organizationSlug } = req.body;
 
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !organizationSlug) {
             return res.status(400).json({
-                message: "Name, email and password are required"
+                message: "Name, email, password and organization slug are required"
             });
         }
+        if (String(password).length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters" });
+        }
 
-        const normalizedEmail = email.trim().toLowerCase();
-
-        const existingUser = await User.findOne({
-            email: normalizedEmail
+        const organization = await Organization.findOne({
+            slug: String(organizationSlug).trim().toLowerCase(),
+            isActive: true
         });
-
-        if (existingUser) {
-            return res.status(409).json({
-                message: "Email is already registered"
-            });
+        if (!organization) {
+            return res.status(404).json({ message: "Active organization not found. Check the organization slug." });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const normalizedEmail = String(email).trim().toLowerCase();
+        if (await User.findOne({ email: normalizedEmail })) {
+            return res.status(409).json({ message: "Email is already registered" });
+        }
 
         const user = await User.create({
-            name: name.trim(),
+            name: String(name).trim(),
             email: normalizedEmail,
-            password: hashedPassword,
-            role: "customer"
+            password: await bcrypt.hash(password, 10),
+            role: "customer",
+            organization: organization._id
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             message: "Customer account created successfully",
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            user: publicUser(user, organization)
         });
     } catch (error) {
         console.error("Registration error:", error.message);
-
-        res.status(500).json({
-            message: "Server error"
-        });
+        if (error.code === 11000) {
+            return res.status(409).json({ message: "Email is already registered" });
+        }
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
 const registerStaff = async (req, res) => {
     try {
-        const {
-            name,
-            email,
-            password,
-            role,
-            registrationKey
-        } = req.body;
+        const { name, email, password, role, registrationKey, organizationSlug } = req.body;
 
-        if (!name || !email || !password || !role || !registrationKey) {
+        if (!name || !email || !password || !role || !registrationKey || !organizationSlug) {
             return res.status(400).json({
-                message:
-                    "Name, email, password, role and registration key are required"
+                message: "Name, email, password, role, organization slug and registration key are required"
             });
         }
 
-        if (!["agent", "admin"].includes(role)) {
+        // Public registration cannot create organization administrators.
+        if (!["agent", "manager"].includes(role)) {
             return res.status(400).json({
-                message: "Invalid staff role"
+                message: "Public staff registration is limited to agents and managers"
             });
         }
-
-        if (
-            registrationKey !==
-            process.env.STAFF_REGISTRATION_KEY
-        ) {
-            return res.status(403).json({
-                message: "Invalid staff registration key"
-            });
+        if (!process.env.STAFF_REGISTRATION_KEY ||
+            registrationKey !== process.env.STAFF_REGISTRATION_KEY) {
+            return res.status(403).json({ message: "Invalid staff registration key" });
+        }
+        if (String(password).length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters" });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
-
-        const existingUser = await User.findOne({
-            email: normalizedEmail
+        const organization = await Organization.findOne({
+            slug: String(organizationSlug).trim().toLowerCase(),
+            isActive: true
         });
-
-        if (existingUser) {
-            return res.status(409).json({
-                message: "Email is already registered"
-            });
+        if (!organization) {
+            return res.status(404).json({ message: "Active organization not found. Check the organization slug." });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const normalizedEmail = String(email).trim().toLowerCase();
+        if (await User.findOne({ email: normalizedEmail })) {
+            return res.status(409).json({ message: "Email is already registered" });
+        }
 
         const user = await User.create({
-            name: name.trim(),
+            name: String(name).trim(),
             email: normalizedEmail,
-            password: hashedPassword,
-            role
+            password: await bcrypt.hash(password, 10),
+            role,
+            organization: organization._id
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             message: `${role} account created successfully`,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            user: publicUser(user, organization)
         });
     } catch (error) {
         console.error("Staff registration error:", error.message);
-
-        res.status(500).json({
-            message: "Server error"
-        });
+        if (error.code === 11000) {
+            return res.status(409).json({ message: "Email is already registered" });
+        }
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
 const loginUser = async (req, res) => {
     try {
         const { email, password, role } = req.body;
-
         if (!email || !password) {
-            return res.status(400).json({
-                message: "Email and password are required"
-            });
+            return res.status(400).json({ message: "Email and password are required" });
         }
-
-        const normalizedEmail = email.trim().toLowerCase();
 
         const user = await User.findOne({
-            email: normalizedEmail
-        });
+            email: String(email).trim().toLowerCase()
+        }).populate("organization", "name slug isActive");
 
         if (!user) {
-            return res.status(401).json({
-                message: "Invalid email or password"
-            });
+            return res.status(401).json({ message: "Invalid email or password" });
         }
-
         if (!user.isActive) {
-            return res.status(403).json({
-                message: "This account is inactive"
-            });
+            return res.status(403).json({ message: "This account is inactive" });
+        }
+        if (!user.organization || !user.organization.isActive) {
+            return res.status(403).json({ message: "This organization is inactive or unavailable" });
         }
 
-        const passwordMatch = await bcrypt.compare(
-            password,
-            user.password
-        );
-
+        const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return res.status(401).json({
-                message: "Invalid email or password"
-            });
+            return res.status(401).json({ message: "Invalid email or password" });
         }
-
         if (role && user.role !== role) {
             return res.status(403).json({
-                message:
-                    `This account is registered as ${user.role}. ` +
-                    "Please use the correct login portal."
+                message: `This account is registered as ${user.role}. Please use the correct login portal.`
             });
         }
 
         const token = jwt.sign(
             {
-                userId: user._id,
-                role: user.role
+                userId: user._id.toString(),
+                role: user.role,
+                organizationId: user.organization._id.toString()
             },
             process.env.JWT_SECRET,
-            {
-                expiresIn: "1d"
-            }
+            { expiresIn: "1d" }
         );
 
-        res.json({
+        return res.json({
             message: "Login successful",
             token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            user: publicUser(user, user.organization)
         });
     } catch (error) {
         console.error("Login error:", error.message);
-
-        res.status(500).json({
-            message: "Server error"
-        });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
-module.exports = {
-    registerUser,
-    registerStaff,
-    loginUser
-};
+module.exports = { registerUser, registerStaff, loginUser };

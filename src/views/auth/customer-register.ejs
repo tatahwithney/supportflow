@@ -3,120 +3,66 @@
 
 <main>
     <h2>Create Customer Account</h2>
-
-    <p>
-        Create an account to submit and track
-        support requests.
-    </p>
+    <p>Create an account to submit and track support requests for your organization.</p>
 
     <form id="registerForm">
         <div>
-            <label for="name">Full Name</label><br>
-            <input
-                type="text"
-                id="name"
-                required
-            >
+            <label for="organizationSlug">Organization Slug</label><br>
+            <input type="text" id="organizationSlug" required>
         </div>
-
         <br>
-
+        <div>
+            <label for="name">Full Name</label><br>
+            <input type="text" id="name" required>
+        </div>
+        <br>
         <div>
             <label for="email">Email</label><br>
-            <input
-                type="email"
-                id="email"
-                required
-            >
+            <input type="email" id="email" required>
         </div>
-
         <br>
-
         <div>
             <label for="password">Password</label><br>
-            <input
-                type="password"
-                id="password"
-                minlength="6"
-                required
-            >
+            <input type="password" id="password" minlength="6" required>
         </div>
-
         <br>
-
-        <button type="submit">
-            Create Customer Account
-        </button>
+        <button type="submit">Create Customer Account</button>
     </form>
 
-    <p id="message"></p>
-
-    <p>
-        Already have an account?
-        <a href="/customer/login">Customer Login</a>
-    </p>
-
-    <p>
-        Staff member?
-        <a href="/staff/register">Staff Registration</a>
-    </p>
+    <p id="message" role="status"></p>
+    <p>Already have an account? <a href="/customer/login">Customer Login</a></p>
+    <p>Need a new workspace? <a href="/organizations/register">Register an organization</a></p>
+    <p>Staff member? <a href="/staff/register">Staff Registration</a></p>
 </main>
 
 <script>
-document
-    .getElementById("registerForm")
-    .addEventListener("submit", async (event) => {
-        event.preventDefault();
+document.getElementById("registerForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const message = document.getElementById("message");
+    const payload = {
+        organizationSlug: document.getElementById("organizationSlug").value,
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+    };
 
-        const message =
-            document.getElementById("message");
-
-        const name =
-            document.getElementById("name").value;
-
-        const email =
-            document.getElementById("email").value;
-
-        const password =
-            document.getElementById("password").value;
-
-        try {
-            const response = await fetch(
-                "/api/auth/register",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-                    body: JSON.stringify({
-                        name,
-                        email,
-                        password
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                message.textContent =
-                    data.message;
-                return;
-            }
-
-            message.textContent =
-                "Registration successful. Redirecting to login...";
-
-            setTimeout(() => {
-                window.location.href =
-                    "/customer/login";
-            }, 1000);
-        } catch (error) {
-            message.textContent =
-                "Unable to connect to server.";
+    try {
+        const response = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            message.textContent = data.message || "Unable to register.";
+            return;
         }
-    });
+        message.textContent = "Registration successful. Redirecting to customer login...";
+        setTimeout(() => { window.location.href = "/customer/login"; }, 1000);
+    } catch (error) {
+        message.textContent = "Unable to connect to server.";
+    }
+});
 </script>
 
 <%- include("../partials/footer") %>

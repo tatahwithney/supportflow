@@ -2,29 +2,31 @@ const mongoose = require("mongoose");
 
 const responseSchema = new mongoose.Schema(
     {
+        organization: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Organization",
+            required: true,
+            index: true
+        },
         request: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "SupportRequest",
-            required: true,
+            required: true
         },
-
         sender: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: true,
+            required: true
         },
-
         message: {
             type: String,
             required: true,
-            trim: true,
-        },
+            trim: true
+        }
     },
-    {
-        timestamps: true,
-    }
+    { timestamps: true }
 );
 
-const Response = mongoose.model("Response", responseSchema);
+responseSchema.index({ organization: 1, request: 1, createdAt: 1 });
 
-module.exports = Response;
+module.exports = mongoose.model("Response", responseSchema);

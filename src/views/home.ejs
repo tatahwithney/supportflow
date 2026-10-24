@@ -55,6 +55,12 @@
                 <a href="/staff/register">
                     Staff Registration
                 </a>
+
+                |
+
+                <a href="/organizations/register">
+                    Register an Organization
+                </a>
             </section>
         </div>
 
@@ -149,7 +155,7 @@ if (role === "agent") {
     agentHome.hidden = false;
 }
 
-if (role === "admin") {
+if (role === "admin" || role === "manager") {
     guestHome.hidden = true;
     adminHome.hidden = false;
 }

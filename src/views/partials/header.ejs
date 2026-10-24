@@ -20,6 +20,10 @@
             <a href="/staff/register">
                 Staff Registration
             </a>
+
+            <a href="/organizations/register">
+                Register Organization
+            </a>
         </span>
 
         <span id="customerNav" hidden>
@@ -89,7 +93,7 @@ if (currentRole === "agent") {
     ).hidden = false;
 }
 
-if (currentRole === "admin") {
+if (currentRole === "admin" || currentRole === "manager") {
     document.getElementById(
         "guestNav"
     ).hidden = true;

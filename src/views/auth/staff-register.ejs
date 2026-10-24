@@ -3,178 +3,78 @@
 
 <main>
     <h2>Staff Registration</h2>
-
-    <p>
-        Staff registration is restricted to
-        authorized personnel.
-    </p>
+    <p>Register as an agent or manager for an existing organization. Organization administrators are created when the organization is registered.</p>
 
     <form id="registerForm">
+        <div>
+            <label for="organizationSlug">Organization Slug</label><br>
+            <input type="text" id="organizationSlug" required>
+        </div>
+        <br>
         <fieldset>
             <legend>Account Type</legend>
-
-            <label>
-                <input
-                    type="radio"
-                    name="role"
-                    value="agent"
-                    checked
-                >
-                Support Agent
-            </label>
-
-            <br>
-
-            <label>
-                <input
-                    type="radio"
-                    name="role"
-                    value="admin"
-                >
-                Administrator
-            </label>
+            <label><input type="radio" name="role" value="agent" checked> Support Agent</label><br>
+            <label><input type="radio" name="role" value="manager"> Manager</label>
         </fieldset>
-
         <br>
-
         <div>
             <label for="name">Full Name</label><br>
-            <input
-                type="text"
-                id="name"
-                required
-            >
+            <input type="text" id="name" required>
         </div>
-
         <br>
-
         <div>
             <label for="email">Email</label><br>
-            <input
-                type="email"
-                id="email"
-                required
-            >
+            <input type="email" id="email" required>
         </div>
-
         <br>
-
         <div>
             <label for="password">Password</label><br>
-            <input
-                type="password"
-                id="password"
-                minlength="6"
-                required
-            >
+            <input type="password" id="password" minlength="6" required>
         </div>
-
         <br>
-
         <div>
-            <label for="registrationKey">
-                Staff Registration Key
-            </label><br>
-
-            <input
-                type="password"
-                id="registrationKey"
-                required
-            >
+            <label for="registrationKey">Staff Registration Key</label><br>
+            <input type="password" id="registrationKey" required>
         </div>
-
         <br>
-
-        <button type="submit">
-            Create Staff Account
-        </button>
+        <button type="submit">Create Staff Account</button>
     </form>
 
-    <p id="message"></p>
-
-    <p>
-        Already have a staff account?
-        <a href="/staff/login">
-            Staff Login
-        </a>
-    </p>
-
-    <p>
-        Customer?
-        <a href="/customer/register">
-            Customer Registration
-        </a>
-    </p>
+    <p id="message" role="status"></p>
+    <p>Already have a staff account? <a href="/staff/login">Staff Login</a></p>
+    <p>Customer? <a href="/customer/register">Customer Registration</a></p>
 </main>
 
 <script>
-document
-    .getElementById("registerForm")
-    .addEventListener("submit", async (event) => {
-        event.preventDefault();
+document.getElementById("registerForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const message = document.getElementById("message");
+    const payload = {
+        organizationSlug: document.getElementById("organizationSlug").value,
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        registrationKey: document.getElementById("registrationKey").value,
+        role: document.querySelector('input[name="role"]:checked').value
+    };
 
-        const message =
-            document.getElementById("message");
-
-        const name =
-            document.getElementById("name").value;
-
-        const email =
-            document.getElementById("email").value;
-
-        const password =
-            document.getElementById("password").value;
-
-        const registrationKey =
-            document.getElementById(
-                "registrationKey"
-            ).value;
-
-        const role =
-            document.querySelector(
-                'input[name="role"]:checked'
-            ).value;
-
-        try {
-            const response = await fetch(
-                "/api/auth/staff/register",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-                    body: JSON.stringify({
-                        name,
-                        email,
-                        password,
-                        role,
-                        registrationKey
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                message.textContent =
-                    data.message;
-                return;
-            }
-
-            message.textContent =
-                `${role} account created successfully. ` +
-                "Redirecting to staff login...";
-
-            setTimeout(() => {
-                window.location.href =
-                    "/staff/login";
-            }, 1000);
-        } catch (error) {
-            message.textContent =
-                "Unable to connect to server.";
+    try {
+        const response = await fetch("/api/auth/staff/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            message.textContent = data.message || "Unable to register staff account.";
+            return;
         }
-    });
+        message.textContent = `${payload.role} account created successfully. Redirecting to staff login...`;
+        setTimeout(() => { window.location.href = "/staff/login"; }, 1000);
+    } catch (error) {
+        message.textContent = "Unable to connect to server.";
+    }
+});
 </script>
 
 <%- include("../partials/footer") %>

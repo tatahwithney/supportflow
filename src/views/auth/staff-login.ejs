@@ -28,9 +28,20 @@
                 <input
                     type="radio"
                     name="role"
+                    value="manager"
+                >
+                Manager
+            </label>
+
+            <br>
+
+            <label>
+                <input
+                    type="radio"
+                    name="role"
                     value="admin"
                 >
-                Administrator
+                Organization Administrator
             </label>
         </fieldset>
 
@@ -139,7 +150,8 @@ document
                 window.location.href =
                     "/agent/dashboard";
             } else if (
-                data.user.role === "admin"
+                data.user.role === "admin" ||
+                data.user.role === "manager"
             ) {
                 window.location.href =
                     "/admin/dashboard";

@@ -1,0 +1,79 @@
+<%- include("../partials/head", { title: "Register an Organization" }) %>
+<%- include("../partials/header") %>
+
+<main>
+    <h2>Register Your Organization</h2>
+    <p>Create an organization workspace and its first administrator account.</p>
+
+    <form id="organizationForm">
+        <div>
+            <label for="organizationName">Organization Name</label><br>
+            <input id="organizationName" required maxlength="120">
+        </div>
+        <br>
+        <div>
+            <label for="organizationSlug">Organization Slug</label><br>
+            <input id="organizationSlug" placeholder="e.g. acme-support">
+            <small>Use this slug when customers and staff register.</small>
+        </div>
+        <br>
+        <div>
+            <label for="contactEmail">Organization Contact Email</label><br>
+            <input id="contactEmail" type="email" required>
+        </div>
+        <hr>
+        <h3>Administrator Account</h3>
+        <div>
+            <label for="adminName">Administrator Name</label><br>
+            <input id="adminName" required>
+        </div>
+        <br>
+        <div>
+            <label for="adminEmail">Administrator Email</label><br>
+            <input id="adminEmail" type="email" required>
+        </div>
+        <br>
+        <div>
+            <label for="password">Password (minimum 6 characters)</label><br>
+            <input id="password" type="password" minlength="6" required>
+        </div>
+        <br>
+        <button type="submit">Create Organization</button>
+    </form>
+    <p id="message" role="status"></p>
+    <p>Already have an account? <a href="/staff/login">Sign in</a></p>
+</main>
+
+<script>
+document.getElementById("organizationForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const message = document.getElementById("message");
+    const payload = {
+        organizationName: document.getElementById("organizationName").value,
+        organizationSlug: document.getElementById("organizationSlug").value,
+        contactEmail: document.getElementById("contactEmail").value,
+        adminName: document.getElementById("adminName").value,
+        adminEmail: document.getElementById("adminEmail").value,
+        password: document.getElementById("password").value
+    };
+
+    try {
+        const response = await fetch("/api/organizations/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            message.textContent = data.message || "Unable to register organization.";
+            return;
+        }
+        message.textContent = `Organization created. Your organization slug is "${data.organization.slug}". Save it for customer and staff registration. Redirecting to staff login...`;
+        setTimeout(() => { window.location.href = "/staff/login"; }, 1800);
+    } catch (error) {
+        message.textContent = "Unable to connect to server.";
+    }
+});
+</script>
+
+<%- include("../partials/footer") %>

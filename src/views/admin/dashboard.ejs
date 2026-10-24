@@ -72,7 +72,7 @@
 <script>
 const token = getToken();
 
-if (!token || getUserRole() !== "admin") {
+if (!token || !["admin", "manager"].includes(getUserRole())) {
     window.location.href = "/staff/login";
 }
 
