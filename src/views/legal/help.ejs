@@ -1,0 +1,47 @@
+<%- include("../partials/head", { title: "Help", description: "Answers to common questions about using SupportFlow." }) %>
+<%- include("../partials/header") %>
+
+<main id="main">
+    <div class="section-head" style="margin-top:0">
+        <span class="eyebrow">Help centre</span>
+        <h1>Frequently asked questions</h1>
+        <p>Quick answers to the most common questions. Cannot find yours? <a href="/contact">Contact us</a>.</p>
+    </div>
+
+    <div class="faq">
+            <details>
+                <summary>What is an organization slug?</summary>
+                <p>It is the short, unique name of your organization's workspace, for example acme-support. Customers and staff enter it when registering so they join the right workspace. You receive it when your organization is registered.</p>
+            </details>
+            <details>
+                <summary>How do I create a workspace for my organization?</summary>
+                <p>Choose Register your organization, enter your organization details and create the administrator account. You can then invite staff and customers with your slug.</p>
+            </details>
+            <details>
+                <summary>How do customers join?</summary>
+                <p>Customers choose Create a customer account, enter their organization's slug and their details, and then sign in to create requests.</p>
+            </details>
+            <details>
+                <summary>What is the staff registration key?</summary>
+                <p>It is a private key that staff need to register as an agent or manager. Ask your organization administrator for it. Keep it private.</p>
+            </details>
+            <details>
+                <summary>What do the request statuses mean?</summary>
+                <p>Open means the request is waiting for attention. In progress means someone is working on it. Resolved means a solution was provided. Closed means the request is finished.</p>
+            </details>
+            <details>
+                <summary>Who can see my requests?</summary>
+                <p>Customers see only their own requests. Agents see the requests assigned to them. Managers and administrators of your organization can see all requests in that organization. Other organizations cannot see them.</p>
+            </details>
+            <details>
+                <summary>I forgot my password. What can I do?</summary>
+                <p>Password reset is not available yet. Please contact your organization administrator or email us and we will help you regain access.</p>
+            </details>
+            <details>
+                <summary>How do I sign out?</summary>
+                <p>Use the Logout button in the top menu. On a phone, open the menu icon first.</p>
+            </details>
+    </div>
+</main>
+
+<%- include("../partials/footer") %>

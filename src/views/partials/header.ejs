@@ -1,105 +1,115 @@
-<header>
-    <nav>
-        <a href="/">
-            <strong>SupportFlow</strong>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+    <div class="header-inner">
+        <a class="brand" href="/" aria-label="SupportFlow home">
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+                <rect width="32" height="32" rx="9" fill="#7fff00"/>
+                <path d="M9 9.5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-6.2l-4.3 3.4a.6.6 0 0 1-1-.47V20.5H9a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z" fill="#0b1600"/>
+            </svg>
+            <span>Support<b>Flow</b></span>
         </a>
 
-        <span id="guestNav">
-            <a href="/customer/login">
-                Customer Login
-            </a>
+        <nav class="nav" id="siteNav" aria-label="Main navigation">
+            <div class="nav-links" id="navLinks"></div>
+            <div class="nav-actions" id="navActions"></div>
+        </nav>
 
-            <a href="/customer/register">
-                Customer Registration
-            </a>
-
-            <a href="/staff/login">
-                Staff Login
-            </a>
-
-            <a href="/staff/register">
-                Staff Registration
-            </a>
-
-            <a href="/organizations/register">
-                Register Organization
-            </a>
-        </span>
-
-        <span id="customerNav" hidden>
-            <a href="/customer/dashboard">
-                Dashboard
-            </a>
-
-            <a href="/customer/request/new">
-                New Request
-            </a>
-
-            <button onclick="logout()">
-                Logout
-            </button>
-        </span>
-
-        <span id="agentNav" hidden>
-            <a href="/agent/dashboard">
-                Dashboard
-            </a>
-
-            <button onclick="logout()">
-                Logout
-            </button>
-        </span>
-
-        <span id="adminNav" hidden>
-            <a href="/admin/dashboard">
-                Dashboard
-            </a>
-
-            <a href="/admin/users">
-                Users
-            </a>
-
-            <a href="/admin/requests">
-                Requests
-            </a>
-
-            <button onclick="logout()">
-                Logout
-            </button>
-        </span>
-    </nav>
+        <button
+            type="button"
+            class="nav-toggle"
+            id="navToggle"
+            aria-controls="siteNav"
+            aria-expanded="false"
+            aria-label="Open menu"
+        >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                <path d="M4 7h16M4 12h16M4 17h16"/>
+            </svg>
+        </button>
+    </div>
 </header>
 
 <script>
-const currentRole = getUserRole();
+(function () {
+    var role = getUserRole();
 
-if (currentRole === "customer") {
-    document.getElementById(
-        "guestNav"
-    ).hidden = true;
+    var menus = {
+        guest: {
+            links: [
+                ["Features", "/#features"],
+                ["How it works", "/#how"],
+                ["Help", "/help"],
+                ["Staff login", "/staff/login"]
+            ],
+            actions:
+                '<a class="btn btn-ghost btn-sm" href="/customer/login">Sign in</a>' +
+                '<a class="btn btn-primary btn-sm" href="/organizations/register">Get started</a>'
+        },
+        customer: {
+            links: [
+                ["Dashboard", "/customer/dashboard"],
+                ["New request", "/customer/request/new"],
+                ["Help", "/help"]
+            ]
+        },
+        agent: {
+            links: [
+                ["Dashboard", "/agent/dashboard"],
+                ["Help", "/help"]
+            ]
+        },
+        admin: {
+            links: [
+                ["Dashboard", "/admin/dashboard"],
+                ["Users", "/admin/users"],
+                ["Requests", "/admin/requests"],
+                ["Help", "/help"]
+            ]
+        }
+    };
 
-    document.getElementById(
-        "customerNav"
-    ).hidden = false;
-}
+    var key = role === "manager" ? "admin" : (menus[role] ? role : "guest");
+    var menu = menus[key];
+    var path = window.location.pathname;
 
-if (currentRole === "agent") {
-    document.getElementById(
-        "guestNav"
-    ).hidden = true;
+    document.getElementById("navLinks").innerHTML = menu.links.map(function (item) {
+        var active = item[1] === path ? " active" : "";
+        return '<a class="' + active.trim() + '" href="' + item[1] + '">' + item[0] + '</a>';
+    }).join("");
 
-    document.getElementById(
-        "agentNav"
-    ).hidden = false;
-}
+    document.getElementById("navActions").innerHTML = menu.actions ||
+        '<span class="role-chip">' + role + '</span>' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>';
 
-if (currentRole === "admin" || currentRole === "manager") {
-    document.getElementById(
-        "guestNav"
-    ).hidden = true;
+    var toggle = document.getElementById("navToggle");
 
-    document.getElementById(
-        "adminNav"
-    ).hidden = false;
-}
+    function setOpen(open) {
+        document.body.classList.toggle("nav-open", open);
+        toggle.setAttribute("aria-expanded", String(open));
+        toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+
+    toggle.addEventListener("click", function () {
+        setOpen(!document.body.classList.contains("nav-open"));
+    });
+
+    document.getElementById("siteNav").addEventListener("click", function (event) {
+        if (event.target.closest("a")) {
+            setOpen(false);
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            setOpen(false);
+        }
+    });
+
+    window.addEventListener("resize", function () {
+        if (window.innerWidth > 960) {
+            setOpen(false);
+        }
+    });
+})();
 </script>

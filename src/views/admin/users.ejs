@@ -1,24 +1,25 @@
 <%- include("../partials/head", { title: "User Management" }) %>
 <%- include("../partials/header") %>
 
-<main>
-    <h2>User Management</h2>
+<main id="main">
+    <a class="back-link" href="/admin/dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        Back to dashboard
+    </a>
 
-    <p>
-        View and manage SupportFlow user accounts.
-    </p>
-
-    <div id="users">
-        <p>Loading users...</p>
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">Administration</span>
+            <h1>User management</h1>
+            <p class="lead">View accounts, change roles and deactivate users in your workspace.</p>
+        </div>
     </div>
 
-    <p id="message"></p>
+    <div id="users">
+        <p class="muted">Loading users...</p>
+    </div>
 
-    <p>
-        <a href="/admin/dashboard">
-            Back to Admin Dashboard
-        </a>
-    </p>
+    <p id="message" class="alert toast" role="status"></p>
 </main>
 
 <script>
@@ -60,93 +61,56 @@ async function loadUsers() {
 
         if (users.length === 0) {
             container.innerHTML =
-                "<p>No users found.</p>";
+                '<div class="empty">No users found.</div>';
 
             return;
         }
 
         container.innerHTML = `
-            <table border="1" cellpadding="8">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    ${users.map(user => `
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
                         <tr>
-                            <td>${user.name}</td>
-
-                            <td>${user.email}</td>
-
-                            <td>
-                                <select
-                                    id="role-${user._id}"
-                                >
-                                    <option
-                                        value="customer"
-                                        ${user.role === "customer" ? "selected" : ""}
-                                    >
-                                        Customer
-                                    </option>
-
-                                    <option
-                                        value="agent"
-                                        ${user.role === "agent" ? "selected" : ""}
-                                    >
-                                        Agent
-                                    </option>
-
-                                    <option
-                                        value="manager"
-                                        ${user.role === "manager" ? "selected" : ""}
-                                    >
-                                        Manager
-                                    </option>
-
-                                    <option
-                                        value="admin"
-                                        ${user.role === "admin" ? "selected" : ""}
-                                    >
-                                        Admin
-                                    </option>
-                                </select>
-                            </td>
-
-                            <td>
-                                ${user.isActive
-                                    ? "Active"
-                                    : "Inactive"}
-                            </td>
-
-                            <td>
-                                <button
-                                    onclick="updateUser('${user._id}')"
-                                >
-                                    Save
-                                </button>
-
-                                ${
-                                    user.isActive
-                                    ? `
-                                        <button
-                                            onclick="deactivateUser('${user._id}')"
-                                        >
-                                            Deactivate
-                                        </button>
-                                    `
-                                    : ""
-                                }
-                            </td>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
-                    `).join("")}
-                </tbody>
-            </table>
+                    </thead>
+
+                    <tbody>
+                        ${users.map(user => `
+                            <tr>
+                                <td data-label="Name"><strong>${escapeHtml(user.name)}</strong></td>
+                                <td data-label="Email">${escapeHtml(user.email)}</td>
+                                <td data-label="Role">
+                                    <select id="role-${user._id}" aria-label="Role for ${escapeHtml(user.name)}">
+                                        ${["customer", "agent", "manager", "admin"].map(role => `
+                                            <option value="${role}" ${user.role === role ? "selected" : ""}>
+                                                ${role.charAt(0).toUpperCase() + role.slice(1)}
+                                            </option>
+                                        `).join("")}
+                                    </select>
+                                </td>
+                                <td data-label="Status">
+                                    <span class="badge ${user.isActive ? "status-resolved" : "status-closed"}">
+                                        ${user.isActive ? "Active" : "Inactive"}
+                                    </span>
+                                </td>
+                                <td data-label="Actions">
+                                    <div class="actions">
+                                        <button class="btn btn-secondary btn-sm" onclick="updateUser('${user._id}')">Save</button>
+                                        ${user.isActive
+                                            ? `<button class="btn btn-danger btn-sm" onclick="deactivateUser('${user._id}')">Deactivate</button>`
+                                            : ""}
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
         `;
     } catch (error) {
         document.getElementById(

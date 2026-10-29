@@ -37,6 +37,12 @@ app.get("/customer/request/new", (req, res) => res.render("customer/request-form
 app.get("/customer/requests/:id", (req, res) => res.render("customer/request-details", { requestId: req.params.id }));
 app.get("/agent/requests/:id", (req, res) => res.render("agent/request-details", { requestId: req.params.id }));
 
+app.get("/privacy", (req, res) => res.render("legal/privacy"));
+app.get("/terms", (req, res) => res.render("legal/terms"));
+app.get("/about", (req, res) => res.render("legal/about"));
+app.get("/contact", (req, res) => res.render("legal/contact"));
+app.get("/help", (req, res) => res.render("legal/help"));
+
 app.get("/health", (req, res) => {
     res.json({ status: "OK", message: "SupportFlow API is running" });
 });
@@ -46,6 +52,14 @@ app.use("/api/organizations", organizationRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/requests", supportRequestRoutes);
 app.use("/api/requests", responseRoutes);
+
+app.use((req, res) => {
+    if (req.path.startsWith("/api")) {
+        return res.status(404).json({ message: "Route not found" });
+    }
+
+    res.status(404).render("errors/404");
+});
 
 const startServer = async () => {
     try {

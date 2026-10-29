@@ -1,18 +1,25 @@
 <%- include("../partials/head", { title: "Request Management" }) %>
 <%- include("../partials/header") %>
 
-<main>
-    <h2>Support Request Management</h2>
+<main id="main">
+    <a class="back-link" href="/admin/dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        Back to dashboard
+    </a>
 
-    <p id="message">Loading requests...</p>
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">Administration</span>
+            <h1>Support requests</h1>
+            <p class="lead">Assign agents and update the status of every request in your workspace.</p>
+        </div>
+    </div>
 
-    <div id="requests"></div>
+    <div id="requests" class="grid cards-wide">
+        <p class="muted">Loading requests...</p>
+    </div>
 
-    <p>
-        <a href="/admin/dashboard">
-            Back to Admin Dashboard
-        </a>
-    </p>
+    <p id="message" class="alert toast" role="status"></p>
 </main>
 
 <script>
@@ -91,151 +98,82 @@ async function loadRequests() {
             message.textContent =
                 "No support requests found.";
 
-            container.innerHTML = "";
+            container.className = "";
+            container.innerHTML = '<div class="empty">No support requests found.</div>';
             return;
         }
 
         message.textContent = "";
 
-        container.innerHTML =
-            requests.map(request => `
-                <article>
-                    <h3>
-                        ${request.title}
-                    </h3>
+        container.innerHTML = requests.map(request => {
+            const statuses = [
+                ["open", "Open"],
+                ["in-progress", "In progress"],
+                ["resolved", "Resolved"],
+                ["closed", "Closed"]
+            ];
 
-                    <p>
-                        ${request.description}
-                    </p>
-
-                    <p>
-                        <strong>Customer:</strong>
-                        ${
-                            request.customer?.name ||
-                            "Unknown"
-                        }
-                    </p>
-
-                    <p>
-                        <strong>Category:</strong>
-                        ${request.category}
-                    </p>
-
-                    <p>
-                        <strong>Priority:</strong>
-                        ${request.priority}
-                    </p>
-
-                    <p>
-                        <strong>Status:</strong>
-                        ${request.status}
-                    </p>
-
-                    <p>
-                        <strong>Assigned Agent:</strong>
-                        ${
-                            request.assignedAgent?.name ||
-                            "Not assigned"
-                        }
-                    </p>
-
-                    <label>
-                        Assign Agent:
-                    </label>
-
-                    <select
-                        id="agent-${request._id}"
-                    >
-                        <option value="">
-                            Select agent
-                        </option>
-
-                        ${agents.map(agent => `
-                            <option
-                                value="${agent._id}"
-                                ${
-                                    request.assignedAgent?._id ===
-                                    agent._id
-                                        ? "selected"
-                                        : ""
-                                }
-                            >
-                                ${agent.name}
-                            </option>
-                        `).join("")}
-                    </select>
-
-                    <button
-                        onclick="assignAgent('${request._id}')"
-                    >
-                        Assign
-                    </button>
-
-                    <br><br>
-
-                    <label>
-                        Update Status:
-                    </label>
-
-                    <select
-                        id="status-${request._id}"
-                    >
-                        <option
-                            value="open"
-                            ${
-                                request.status === "open"
-                                    ? "selected"
-                                    : ""
-                            }
-                        >
-                            Open
-                        </option>
-
-                        <option
-                            value="in-progress"
-                            ${
-                                request.status ===
-                                "in-progress"
-                                    ? "selected"
-                                    : ""
-                            }
-                        >
-                            In Progress
-                        </option>
-
-                        <option
-                            value="resolved"
-                            ${
-                                request.status ===
-                                "resolved"
-                                    ? "selected"
-                                    : ""
-                            }
-                        >
-                            Resolved
-                        </option>
-
-                        <option
-                            value="closed"
-                            ${
-                                request.status === "closed"
-                                    ? "selected"
-                                    : ""
-                            }
-                        >
-                            Closed
-                        </option>
-                    </select>
-
-                    <button
-                        onclick="updateStatus('${request._id}')"
-                    >
-                        Update Status
-                    </button>
-
-                    <hr>
-                </article>
+            const agentOptions = agents.map(agent => `
+                <option
+                    value="${agent._id}"
+                    ${request.assignedAgent?._id === agent._id ? "selected" : ""}
+                >${escapeHtml(agent.name)}</option>
             `).join("");
+
+            const statusOptions = statuses.map(([value, label]) => `
+                <option
+                    value="${value}"
+                    ${request.status === value ? "selected" : ""}
+                >${label}</option>
+            `).join("");
+
+            return `
+                <article class="card req-card">
+                    <div class="badges">
+                        ${statusBadge(request.status)}
+                        ${priorityBadge(request.priority)}
+                        <span class="badge badge-muted">${escapeHtml(request.category)}</span>
+                    </div>
+
+                    <h3>${escapeHtml(request.title)}</h3>
+                    <p class="clamp">${escapeHtml(request.description)}</p>
+
+                    <dl class="kv">
+                        <div>
+                            <dt>Customer</dt>
+                            <dd>${escapeHtml(request.customer?.name || "Unknown")}</dd>
+                        </div>
+                        <div>
+                            <dt>Assigned agent</dt>
+                            <dd>${escapeHtml(request.assignedAgent?.name || "Not assigned")}</dd>
+                        </div>
+                    </dl>
+
+                    <div class="controls">
+                        <div class="control">
+                            <label for="agent-${request._id}">Assign agent</label>
+                            <div class="control-row">
+                                <select id="agent-${request._id}">
+                                    <option value="">Select agent</option>
+                                    ${agentOptions}
+                                </select>
+                                <button class="btn btn-secondary btn-sm" onclick="assignAgent('${request._id}')">Assign</button>
+                            </div>
+                        </div>
+
+                        <div class="control">
+                            <label for="status-${request._id}">Status</label>
+                            <div class="control-row">
+                                <select id="status-${request._id}">
+                                    ${statusOptions}
+                                </select>
+                                <button class="btn btn-secondary btn-sm" onclick="updateStatus('${request._id}')">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join("");
     } catch (error) {
         document.getElementById(
             "message"

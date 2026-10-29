@@ -1,21 +1,22 @@
 <%- include("../partials/head", { title: "Agent Dashboard" }) %>
 <%- include("../partials/header") %>
 
-<main>
-    <h2>Support Agent Dashboard</h2>
-
-    <p>
-        View and manage support requests assigned
-        to you.
-    </p>
-
-    <h3>Assigned Requests</h3>
-
-    <div id="requests">
-        <p>Loading requests...</p>
+<main id="main">
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">Agent portal</span>
+            <h1>Assigned requests</h1>
+            <p class="lead">Open a request to reply to the customer and update its status.</p>
+        </div>
     </div>
 
-    <p id="message"></p>
+    <div class="stats" id="stats"></div>
+
+    <div id="requests" class="grid cards">
+        <p class="muted">Loading requests...</p>
+    </div>
+
+    <p id="message" class="alert" role="status"></p>
 </main>
 
 <script>
@@ -26,85 +27,48 @@ if (!token || getUserRole() !== "agent") {
 }
 
 async function loadRequests() {
+    const container = document.getElementById("requests");
+
     try {
-        const response = await fetch(
-            "/api/requests",
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${token}`
-                }
-            }
-        );
+        const response = await fetch("/api/requests", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
         if (response.status === 401) {
             handleUnauthorized();
             return;
         }
 
-        const data =
-            await response.json();
+        const data = await response.json();
 
         if (!response.ok) {
-            document.getElementById(
-                "message"
-            ).textContent = data.message;
-
+            container.innerHTML = "";
+            document.getElementById("message").textContent = data.message;
             return;
         }
 
-        const container =
-            document.getElementById(
-                "requests"
-            );
+        renderStats(document.getElementById("stats"), data);
 
         if (data.length === 0) {
-            container.innerHTML =
-                "<p>No requests are currently assigned to you.</p>";
-
+            container.className = "";
+            container.innerHTML = `
+                <div class="empty">
+                    <p>No requests are currently assigned to you.</p>
+                </div>`;
             return;
         }
 
-        container.innerHTML = data.map(
-            request => `
-                <article>
-                    <h4>
-                        ${request.title}
-                    </h4>
-
-                    <p>
-                        ${request.description}
-                    </p>
-
-                    <p>
-                        <strong>Status:</strong>
-                        ${request.status}
-                    </p>
-
-                    <p>
-                        <strong>Priority:</strong>
-                        ${request.priority}
-                    </p>
-
-                    <p>
-                        <strong>Customer:</strong>
-                        ${request.customer?.name || "Unknown"}
-                    </p>
-
-                    <a
-                        href="/agent/requests/${request._id}"
-                    >
-                        Open Request
-                    </a>
-
-                    <hr>
-                </article>
-            `
+        container.innerHTML = data.map(request =>
+            requestCardHtml(
+                request,
+                `/agent/requests/${request._id}`,
+                "Open request",
+                "Customer: " + escapeHtml(request.customer?.name || "Unknown")
+            )
         ).join("");
     } catch (error) {
-        document.getElementById(
-            "message"
-        ).textContent =
+        container.innerHTML = "";
+        document.getElementById("message").textContent =
             "Unable to load requests.";
     }
 }

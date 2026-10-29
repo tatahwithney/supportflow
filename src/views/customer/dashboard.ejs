@@ -1,26 +1,23 @@
 <%- include("../partials/head", { title: "Customer Dashboard" }) %>
 <%- include("../partials/header") %>
 
-<main>
-    <h2>Customer Dashboard</h2>
-
-    <p>
-        Create and track your support requests.
-    </p>
-
-    <p>
-        <a href="/customer/request/new">
-            Create New Support Request
-        </a>
-    </p>
-
-    <h3>My Support Requests</h3>
-
-    <div id="requests">
-        <p>Loading requests...</p>
+<main id="main">
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">Customer portal</span>
+            <h1>My support requests</h1>
+            <p class="lead">Track the progress of your requests and chat with the support team.</p>
+        </div>
+        <a class="btn btn-primary" href="/customer/request/new">New request</a>
     </div>
 
-    <p id="message"></p>
+    <div class="stats" id="stats"></div>
+
+    <div id="requests" class="grid cards">
+        <p class="muted">Loading requests...</p>
+    </div>
+
+    <p id="message" class="alert" role="status"></p>
 </main>
 
 <script>
@@ -31,16 +28,12 @@ if (!token || getUserRole() !== "customer") {
 }
 
 async function loadRequests() {
+    const container = document.getElementById("requests");
+
     try {
-        const response = await fetch(
-            "/api/requests",
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${token}`
-                }
-            }
-        );
+        const response = await fetch("/api/requests", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
         if (response.status === 401) {
             handleUnauthorized();
@@ -50,61 +43,34 @@ async function loadRequests() {
         const data = await response.json();
 
         if (!response.ok) {
-            document.getElementById(
-                "message"
-            ).textContent = data.message;
-
+            container.innerHTML = "";
+            document.getElementById("message").textContent = data.message;
             return;
         }
 
-        const container =
-            document.getElementById("requests");
+        renderStats(document.getElementById("stats"), data);
 
         if (data.length === 0) {
-            container.innerHTML =
-                "<p>You have no support requests.</p>";
-
+            container.className = "";
+            container.innerHTML = `
+                <div class="empty">
+                    <p>You have no support requests yet.</p>
+                    <p><a class="btn btn-primary btn-sm" href="/customer/request/new">Create your first request</a></p>
+                </div>`;
             return;
         }
 
-        container.innerHTML = data.map(
-            request => `
-                <article>
-                    <h4>${request.title}</h4>
-
-                    <p>
-                        ${request.description}
-                    </p>
-
-                    <p>
-                        <strong>Status:</strong>
-                        ${request.status}
-                    </p>
-
-                    <p>
-                        <strong>Priority:</strong>
-                        ${request.priority}
-                    </p>
-
-                    <p>
-                        <strong>Category:</strong>
-                        ${request.category}
-                    </p>
-
-                    <a
-                        href="/customer/requests/${request._id}"
-                    >
-                        View Request
-                    </a>
-
-                    <hr>
-                </article>
-            `
+        container.innerHTML = data.map(request =>
+            requestCardHtml(
+                request,
+                `/customer/requests/${request._id}`,
+                "View request",
+                escapeHtml(request.category)
+            )
         ).join("");
     } catch (error) {
-        document.getElementById(
-            "message"
-        ).textContent =
+        container.innerHTML = "";
+        document.getElementById("message").textContent =
             "Unable to load support requests.";
     }
 }

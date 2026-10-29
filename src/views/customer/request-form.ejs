@@ -1,105 +1,68 @@
 <%- include("../partials/head", { title: "Create Support Request" }) %>
 <%- include("../partials/header") %>
 
-<main>
-    <h2>Create Support Request</h2>
+<main id="main">
+    <a class="back-link" href="/customer/dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        Back to dashboard
+    </a>
 
-    <p>
-        Describe your issue clearly so the support
-        team can assist you.
-    </p>
-
-    <form id="requestForm">
+    <div class="page-head">
         <div>
-            <label for="title">
-                Issue Title
-            </label><br>
-
-            <input
-                type="text"
-                id="title"
-                required
-            >
+            <span class="eyebrow">Customer portal</span>
+            <h1>Create a support request</h1>
+            <p class="lead">Describe your issue clearly so the support team can help you quickly.</p>
         </div>
+    </div>
 
-        <br>
+    <div class="form-layout">
+        <form id="requestForm" class="form card">
+            <div class="field">
+                <label for="title">Issue title</label>
+                <input type="text" id="title" placeholder="A short summary of the problem" required>
+            </div>
 
-        <div>
-            <label for="description">
-                Description
-            </label><br>
+            <div class="field">
+                <label for="description">Description</label>
+                <textarea id="description" rows="6" placeholder="What happened? What did you expect?" required></textarea>
+            </div>
 
-            <textarea
-                id="description"
-                rows="6"
-                required
-            ></textarea>
-        </div>
+            <div class="form-row">
+                <div class="field">
+                    <label for="category">Category</label>
+                    <select id="category" required>
+                        <option value="">Select a category</option>
+                        <option value="Account">Account</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Billing">Billing</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="priority">Priority</label>
+                    <select id="priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+            </div>
 
-        <br>
+            <button type="submit" class="btn btn-primary">Submit request</button>
+            <p id="message" class="alert" role="status"></p>
+        </form>
 
-        <div>
-            <label for="category">
-                Category
-            </label><br>
-
-            <select id="category" required>
-                <option value="">
-                    Select a category
-                </option>
-
-                <option value="Account">
-                    Account
-                </option>
-
-                <option value="Technical">
-                    Technical
-                </option>
-
-                <option value="Billing">
-                    Billing
-                </option>
-
-                <option value="Other">
-                    Other
-                </option>
-            </select>
-        </div>
-
-        <br>
-
-        <div>
-            <label for="priority">
-                Priority
-            </label><br>
-
-            <select id="priority">
-                <option value="low">
-                    Low
-                </option>
-
-                <option value="medium" selected>
-                    Medium
-                </option>
-
-                <option value="high">
-                    High
-                </option>
-
-                <option value="urgent">
-                    Urgent
-                </option>
-            </select>
-        </div>
-
-        <br>
-
-        <button type="submit">
-            Submit Support Request
-        </button>
-    </form>
-
-    <p id="message"></p>
+        <aside class="card">
+            <p class="side-title">Tips for a quick answer</p>
+            <ul class="checklist">
+                <li>Use a clear, specific title</li>
+                <li>Say what you were trying to do</li>
+                <li>Include any error messages you saw</li>
+                <li>Choose urgent only when you are fully blocked</li>
+            </ul>
+        </aside>
+    </div>
 </main>
 
 <script>

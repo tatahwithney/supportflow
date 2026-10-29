@@ -1,72 +1,61 @@
 <%- include("../partials/head", { title: "Admin Dashboard" }) %>
 <%- include("../partials/header") %>
 
-<main>
-    <h2>Administrator Dashboard</h2>
-
-    <p>
-        Manage SupportFlow users and support requests.
-    </p>
-
-    <section>
-    <h3>System Overview</h3>
-
-    <div>
-        <article>
-            <h4>Total Users</h4>
-            <p id="totalUsers">Loading...</p>
-        </article>
-
-        <article>
-            <h4>Active Users</h4>
-            <p id="activeUsers">Loading...</p>
-        </article>
-
-        <article>
-            <h4>Total Requests</h4>
-            <p id="totalRequests">Loading...</p>
-        </article>
-
-        <article>
-            <h4>Open</h4>
-            <p id="openRequests">Loading...</p>
-        </article>
-
-        <article>
-            <h4>In Progress</h4>
-            <p id="inProgressRequests">Loading...</p>
-        </article>
-
-        <article>
-            <h4>Resolved</h4>
-            <p id="resolvedRequests">Loading...</p>
-        </article>
-
-        <article>
-            <h4>Closed</h4>
-            <p id="closedRequests">Loading...</p>
-        </article>
+<main id="main">
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">Administration</span>
+            <h1>Workspace overview</h1>
+            <p class="lead">Monitor users and support requests across your organization.</p>
+        </div>
     </div>
-</section>
-    <hr>
 
-    <section>
-        <h3>Administration</h3>
+    <div class="stats">
+        <div class="stat">
+            <span class="stat-label">Total users</span>
+            <strong class="stat-value" id="totalUsers">-</strong>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Active users</span>
+            <strong class="stat-value" id="activeUsers">-</strong>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Total requests</span>
+            <strong class="stat-value" id="totalRequests">-</strong>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Open</span>
+            <strong class="stat-value" id="openRequests">-</strong>
+        </div>
+        <div class="stat">
+            <span class="stat-label">In progress</span>
+            <strong class="stat-value" id="inProgressRequests">-</strong>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Resolved</span>
+            <strong class="stat-value" id="resolvedRequests">-</strong>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Closed</span>
+            <strong class="stat-value" id="closedRequests">-</strong>
+        </div>
+    </div>
 
-        <p>
-            <a href="/admin/users">
-                Manage Users
-            </a>
-        </p>
+    <h2 style="margin-bottom:16px">Manage</h2>
+    <div class="grid cols-3">
+        <a class="card feature" href="/admin/users">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.2a3.2 3.2 0 0 1 0 5.6M21 20c0-2.6-1.6-4.8-4-5.6"/></svg></div>
+            <h3>Users</h3>
+            <p>Review accounts, change roles and deactivate users.</p>
+        </a>
+        <a class="card feature" href="/admin/requests">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6l1.2 1.2L7 5.4M4 12l1.2 1.2L7 11.4M4 18l1.2 1.2L7 17.4"/></svg></div>
+            <h3>Support requests</h3>
+            <p>Assign agents and update the status of every request.</p>
+        </a>
+    </div>
 
-        <p>
-            <a href="/admin/requests">
-                Manage Support Requests
-            </a>
-        </p>
-    </section>
-
-    <p id="message"></p>
+    <p id="message" class="alert" role="status" style="margin-top:20px"></p>
 </main>
 
 <script>

@@ -1,0 +1,35 @@
+<%- include("../partials/head", { title: "About", description: "About SupportFlow, a multi-tenant customer support platform built with Node.js, Express and MongoDB." }) %>
+<%- include("../partials/header") %>
+
+<main id="main">
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">About</span>
+            <h1>Support, made simple</h1>
+            <p class="lead">SupportFlow helps organizations answer customers faster by keeping every request, assignment and conversation in one place.</p>
+        </div>
+    </div>
+
+    <div class="grid cols-3">
+        <div class="card">
+            <h3>Why it exists</h3>
+            <p>Many teams still handle support through scattered messages and calls. Requests get lost and nobody knows their status. SupportFlow gives them one organised system instead.</p>
+        </div>
+        <div class="card">
+            <h3>How it is built</h3>
+            <p>SupportFlow runs on Node.js and Express, uses MongoDB for storage, and serves its pages with EJS. Access is controlled by role and by organization.</p>
+        </div>
+        <div class="card">
+            <h3>Who built it</h3>
+            <p>SupportFlow was created by Tatah Withney as a capstone project during a backend development internship at Skye8, and has continued to grow since.</p>
+        </div>
+    </div>
+
+    <div class="cta-band">
+        <h2>Want to try it?</h2>
+        <p>Create a workspace for your organization, or sign in if you already have an account.</p>
+        <a class="btn btn-primary btn-lg" href="/organizations/register">Register your organization</a>
+    </div>
+</main>
+
+<%- include("../partials/footer") %>

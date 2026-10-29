@@ -1,47 +1,71 @@
 <%- include("../partials/head", { title: "Register an Organization" }) %>
 <%- include("../partials/header") %>
 
-<main>
-    <h2>Register Your Organization</h2>
-    <p>Create an organization workspace and its first administrator account.</p>
+<main id="main">
+    <div class="auth-wrap">
+        <div class="auth-aside">
+                <span class="eyebrow">For organizations</span>
+                <p class="aside-title">Launch your support desk</p>
+                <p>Create a private workspace and its first administrator in one step.</p>
+                <ul class="checklist">
+                    <li>Your own isolated workspace</li>
+                    <li>Invite agents, managers and customers</li>
+                    <li>Manage users and requests from one dashboard</li>
+                </ul>
+            </div>
+        <div class="auth-card">
+            <div>
+                <h1>Register your organization</h1>
+                <p class="lead">Create a workspace and its first administrator account.</p>
+            </div>
 
-    <form id="organizationForm">
-        <div>
-            <label for="organizationName">Organization Name</label><br>
-            <input id="organizationName" required maxlength="120">
+            <form id="organizationForm" class="form">
+                <div class="field">
+                    <label for="organizationName">Organization name</label>
+                    <input id="organizationName" required maxlength="120">
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="organizationSlug">Workspace slug</label>
+                        <input id="organizationSlug" placeholder="e.g. acme-support">
+                        <span class="hint">Customers and staff use this to register.</span>
+                    </div>
+                    <div class="field">
+                        <label for="contactEmail">Contact email</label>
+                        <input id="contactEmail" type="email" required>
+                    </div>
+                </div>
+
+                <p class="form-title">Administrator account</p>
+
+                <div class="form-row">
+                    <div class="field">
+                        <label for="adminName">Full name</label>
+                        <input id="adminName" autocomplete="name" required>
+                    </div>
+                    <div class="field">
+                        <label for="adminEmail">Email</label>
+                        <input id="adminEmail" type="email" autocomplete="email" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="input-wrap">
+                        <input id="password" type="password" autocomplete="new-password" minlength="6" required>
+                        <button type="button" class="pw-toggle" data-toggle-password="password" aria-label="Show password">Show</button>
+                    </div>
+                    <span class="hint">Minimum 6 characters.</span>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Create organization</button>
+            </form>
+
+            <p id="message" class="alert" role="status"></p>
+
+            <div class="auth-links">
+                <span>Already have an account? <a href="/staff/login">Sign in</a></span>
+            </div>
         </div>
-        <br>
-        <div>
-            <label for="organizationSlug">Organization Slug</label><br>
-            <input id="organizationSlug" placeholder="e.g. acme-support">
-            <small>Use this slug when customers and staff register.</small>
-        </div>
-        <br>
-        <div>
-            <label for="contactEmail">Organization Contact Email</label><br>
-            <input id="contactEmail" type="email" required>
-        </div>
-        <hr>
-        <h3>Administrator Account</h3>
-        <div>
-            <label for="adminName">Administrator Name</label><br>
-            <input id="adminName" required>
-        </div>
-        <br>
-        <div>
-            <label for="adminEmail">Administrator Email</label><br>
-            <input id="adminEmail" type="email" required>
-        </div>
-        <br>
-        <div>
-            <label for="password">Password (minimum 6 characters)</label><br>
-            <input id="password" type="password" minlength="6" required>
-        </div>
-        <br>
-        <button type="submit">Create Organization</button>
-    </form>
-    <p id="message" role="status"></p>
-    <p>Already have an account? <a href="/staff/login">Sign in</a></p>
+    </div>
 </main>
 
 <script>

@@ -1,109 +1,73 @@
 # SupportFlow
 
-SupportFlow is a web-based Support Management System developed as the August Backend Capstone Project at Skye8 Company LTD.
-
-## Description
-
-SupportFlow provides a centralized platform for managing customer support requests.
-
-Customers can create and track support requests, while support agents can manage assigned requests, respond to customers, and update request statuses. Administrators and managers can manage users, assign requests, and monitor support activities.
+**SupportFlow** is a multi-tenant support management platform developed as the Skye8 backend internship capstone project. It allows multiple organizations to use one application while keeping organization users, support requests, and responses isolated by tenant.
 
 ## Live Application
 
-SupportFlow is available at: `https://supportflow-qj5w.onrender.com/`
+https://supportflow-qj5w.onrender.com/
 
 ## Technology Stack
 
-* Node.js
-* Express.js
-* EJS
-* MongoDB
-* Mongoose
-* JavaScript
-* REST API
-* JWT
-* bcryptjs
-* Git/GitHub
-* Render
+- Node.js and Express.js
+- MongoDB and Mongoose
+- EJS, HTML, CSS, and JavaScript
+- JWT authentication and role-based authorization
+- bcryptjs password hashing
+- Git/GitHub and Render
 
-## Project Architecture
+## Multi-Tenant Design
 
-The application follows the MVC (Model-View-Controller) architecture.
+Each organization has a unique slug and its own users and support data.
 
 ```text
-supportflow/
-├── src/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── views/
-│   ├── public/
-│   └── app.js
-├── docs/
-├── .env.example
-├── .gitignore
-├── package.json
-├── package-lock.json
-└── README.md
+SupportFlow
+├── Organization A
+│   ├── Organization Administrator / Manager
+│   ├── Agents and Customers
+│   └── Support Requests and Responses
+├── Organization B
+│   ├── Organization Administrator / Manager
+│   ├── Agents and Customers
+│   └── Support Requests and Responses
+└── Organization C
+    └── Separate users and support data
 ```
 
-## User Roles
+Every user belongs to an organization. Every support request and response stores an organization reference. Authenticated API queries use the organization ID carried in the signed JWT, and request, user, agent assignment, and response lookups are scoped to that organization.
 
-SupportFlow supports four user roles:
+## Roles
 
-* Customer
-* Support Agent
-* Manager
-* Administrator
+- **Customer:** Creates and tracks their own support requests and replies to accessible requests.
+- **Agent:** Views requests assigned to them and updates their status or replies.
+- **Manager:** Views and manages support operations within their organization.
+- **Organization Administrator:** Manages organization users and requests, assigns agents, and updates organization details.
 
-Each role has different permissions based on the user's responsibilities.
+Organization registration creates the first organization administrator. Public staff registration is limited to agents and managers and requires the configured staff registration key. An organization slug is required when a customer or staff member registers.
 
-## Main Features
+## Features
 
-### Authentication and Authorization
-
-* Customer registration and login
-* Staff registration for supported staff roles
-* JWT-based authentication
-* Password hashing with bcryptjs
-* Role-based access control
-* Active/inactive account management
-* Protected API routes
-
-### Support Request Management
-
-* Create support requests
-* View support requests
-* Update request information
-* Assign requests to support agents
-* Update request status
-* Set request priority and category
-* Restrict request access based on user role
-
-### Responses and Ticket History
-
-* Add responses to support requests
-* View response history
-* Track communication between customers and support staff
-
-### User Management
-
-* View users
-* Update user information
-* Manage user roles
-* Deactivate user accounts
-
-### Web Interface
-
-Role-specific EJS interfaces are provided for:
-
-* Customers
-* Support Agents
-* Administrators
+- Organization registration and organization profile retrieval/update
+- Organization-scoped customer and staff registration
+- Password hashing and JWT authentication
+- Role-based route authorization
+- Organization-scoped user listing, lookup, updates, and deactivation
+- Support request creation, listing, updates, assignment, and status changes
+- Request responses and response history
+- Tenant-aware authorization for request and response access
+- EJS web interface and health endpoint
+- Legacy single-tenant data migration to a `Legacy SupportFlow` organization on startup, when legacy records are found
 
 ## API Endpoints
+
+### Organizations
+
+```text
+POST  /api/organizations/register
+GET   /api/organizations/me
+PATCH /api/organizations/me
+```
+
+`POST /api/organizations/register` accepts `organizationName`, optional `organizationSlug`, `contactEmail`, `adminName`, `adminEmail`, and `password`.
 
 ### Authentication
 
@@ -113,6 +77,8 @@ POST /api/auth/staff/register
 POST /api/auth/login
 ```
 
+Customer registration accepts `organizationSlug`, `name`, `email`, and `password`. Staff registration accepts `organizationSlug`, `name`, `email`, `password`, `role` (`agent` or `manager`), and `registrationKey`.
+
 ### Users
 
 ```text
@@ -121,6 +87,8 @@ GET    /api/users/:id
 PUT    /api/users/:id
 DELETE /api/users/:id
 ```
+
+These endpoints are restricted to organization administrators and managers and operate only within the authenticated user's organization.
 
 ### Support Requests
 
@@ -141,68 +109,52 @@ POST /api/requests/:id/responses
 GET  /api/requests/:id/responses
 ```
 
-## Database
+Protected endpoints require:
 
-SupportFlow uses MongoDB with Mongoose.
+```text
+Authorization: Bearer <JWT>
+```
 
-The main collections are:
+## Data Models
 
-* Users
-* Support Requests
-* Responses
+- **Organization:** name, unique slug, contact email, active status, timestamps.
+- **User:** name, globally unique email, password hash, organization reference, role, active status, timestamps.
+- **SupportRequest:** organization reference, title, description, customer, assigned agent, status, priority, category, timestamps.
+- **Response:** organization reference, request, sender, message, timestamps.
 
-MongoDB Atlas is used as the production database.
+The current implementation uses a globally unique user email address. This avoids duplicate identities across organizations while still isolating their application data.
 
 ## Environment Variables
 
-Create a `.env` file in the project root:
+Create a local `.env` file in the project root:
 
 ```env
 PORT=3000
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=your_long_random_jwt_secret
 STAFF_REGISTRATION_KEY=your_staff_registration_key
 ```
 
-Never commit the `.env` file or expose sensitive credentials.
+Never commit `.env` or share its values. `.env.example` should contain placeholders only.
 
-An `.env.example` file is included to show the required configuration structure.
-
-## Running Locally
-
-Install dependencies:
+## Run Locally
 
 ```bash
 npm install
-```
-
-Start the development server:
-
-```bash
 npm run dev
 ```
 
-For production:
+Production start command:
 
 ```bash
 npm start
 ```
 
-The application runs locally at:
-
-```text
-http://localhost:3000
-```
+Open `http://localhost:3000`.
 
 ## Health Check
 
-The application provides a health check endpoint:
-
-```text
-GET /health
-```
-
-Expected response:
+`GET /health`
 
 ```json
 {
@@ -211,87 +163,37 @@ Expected response:
 }
 ```
 
-## Testing
+## Database Migration Note
 
-The application was tested during development using API testing tools.
-
-Testing covered:
-
-* Customer registration and login
-* JWT authentication
-* Invalid and expired token handling
-* Role-based access control
-* User management
-* Support request creation and management
-* Agent assignment
-* Request status updates
-* Support responses and response history
-* Protected API access
+On startup, records created by the earlier single-tenant version that do not have an organization reference are assigned to a `Legacy SupportFlow` organization. New registration and creation flows assign organization references directly. Back up the production database before deploying schema changes, and verify the migration logs and tenant separation after deployment.
 
 ## Deployment
 
-SupportFlow has been successfully deployed as a Node.js web service on Render.
+The application is configured for Render and MongoDB Atlas. Render environment variables must include `MONGO_URI`, `JWT_SECRET`, and `STAFF_REGISTRATION_KEY`. Do not commit production credentials.
 
-Production architecture:
+## Project Structure
 
 ```text
-User Browser
-     ↓
-Render
-     ↓
-Express.js / EJS
-     ↓
-Mongoose
-     ↓
-MongoDB Atlas
+supportflow/
+├── src/
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── views/
+│   ├── public/
+│   └── app.js
+├── docs/
+├── .env.example
+├── .gitignore
+├── package.json
+├── package-lock.json
+└── README.md
 ```
 
-The application source code is maintained on GitHub and deployed from the `main` branch.
+## Current Scope and Future Work
 
-## Version Control
+The core multi-tenant boundary is implemented in the data models, registration flows, and API query patterns. Before final acceptance, verify the deployed database migration, cross-organization denial cases, registration flows, and role permissions with separate test organizations.
 
-Git and GitHub are used for source-code management and development tracking.
-
-GitHub repository:
-
-https://github.com/tatahwithney/supportflow
-
-## Documentation
-
-Detailed project documentation is available in the `docs` directory:
-
-* `docs/project-development.md` — chronological development progress
-* `docs/database-design.md` — database structure and relationships
-* `docs/api-documentation.md` — API endpoints and usage
-* `docs/deployment.md` — deployment configuration and process
-
-## Development Status
-
-The SupportFlow MVP has been implemented, tested, and successfully deployed.
-
-Completed:
-
-* Project setup and MVC structure
-* Database design and Mongoose models
-* REST API development
-* Authentication and JWT authorization
-* Role-based access control
-* User management
-* Support request management
-* Request assignment and status management
-* Responses and ticket history
-* Role-specific EJS interfaces
-* API testing
-* MongoDB Atlas configuration
-* Git/GitHub integration
-* Render deployment
-
-## Future Improvements
-
-Possible future improvements include:
-
-* Email notifications
-* Advanced search and filtering
-* File attachments
-* Support analytics and reporting
-* Additional request categories and workflow features
+Potential future work includes subscription billing, organization invitations, email verification, notifications, attachments, analytics, and more advanced search/filtering.

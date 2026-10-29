@@ -1,94 +1,56 @@
 <%- include("../partials/head", { title: "Staff Login" }) %>
 <%- include("../partials/header") %>
 
-<main>
-    <h2>Staff Login</h2>
+<main id="main">
+    <div class="auth-wrap">
+        <div class="auth-aside">
+                <span class="eyebrow">Staff portal</span>
+                <p class="aside-title">Welcome back</p>
+                <p>Sign in to manage requests, assignments and conversations.</p>
+                <ul class="checklist">
+                    <li>Agents see their assigned requests</li>
+                    <li>Managers and admins oversee the workspace</li>
+                    <li>Update statuses and reply in one place</li>
+                </ul>
+            </div>
+        <div class="auth-card">
+            <div>
+                <h1>Staff login</h1>
+                <p class="lead">Select your role, then sign in.</p>
+            </div>
 
-    <p>
-        Select your role before logging in.
-    </p>
+            <form id="loginForm" class="form">
+                <fieldset>
+                    <legend>Sign in as</legend>
+                    <div class="choices">
+                        <label class="choice"><input type="radio" name="role" value="agent" checked> Support agent</label>
+                        <label class="choice"><input type="radio" name="role" value="manager"> Manager</label>
+                        <label class="choice"><input type="radio" name="role" value="admin"> Administrator</label>
+                    </div>
+                </fieldset>
 
-    <form id="loginForm">
-        <fieldset>
-            <legend>Login As</legend>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" autocomplete="email" required>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="input-wrap">
+                        <input type="password" id="password" autocomplete="current-password" required>
+                        <button type="button" class="pw-toggle" data-toggle-password="password" aria-label="Show password">Show</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Staff login</button>
+            </form>
 
-            <label>
-                <input
-                    type="radio"
-                    name="role"
-                    value="agent"
-                    checked
-                >
-                Support Agent
-            </label>
+            <p id="message" class="alert" role="status"></p>
 
-            <br>
-
-            <label>
-                <input
-                    type="radio"
-                    name="role"
-                    value="manager"
-                >
-                Manager
-            </label>
-
-            <br>
-
-            <label>
-                <input
-                    type="radio"
-                    name="role"
-                    value="admin"
-                >
-                Organization Administrator
-            </label>
-        </fieldset>
-
-        <br>
-
-        <div>
-            <label for="email">Email</label><br>
-            <input
-                type="email"
-                id="email"
-                required
-            >
+            <div class="auth-links">
+                <span>No staff account? <a href="/staff/register">Staff registration</a></span>
+                <span>Customer? <a href="/customer/login">Customer login</a></span>
+            </div>
         </div>
-
-        <br>
-
-        <div>
-            <label for="password">Password</label><br>
-            <input
-                type="password"
-                id="password"
-                required
-            >
-        </div>
-
-        <br>
-
-        <button type="submit">
-            Staff Login
-        </button>
-    </form>
-
-    <p id="message"></p>
-
-    <p>
-        Don't have a staff account?
-        <a href="/staff/register">
-            Staff Registration
-        </a>
-    </p>
-
-    <p>
-        Customer?
-        <a href="/customer/login">
-            Customer Login
-        </a>
-    </p>
+    </div>
 </main>
 
 <script>

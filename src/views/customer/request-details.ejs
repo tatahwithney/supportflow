@@ -1,50 +1,43 @@
 <%- include("../partials/head", { title: "Request Details" }) %>
 <%- include("../partials/header") %>
 
-<main>
-    <h2>Support Request Details</h2>
+<main id="main">
+    <a class="back-link" href="/customer/dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        Back to dashboard
+    </a>
 
-    <div id="request">
-        <p>Loading request...</p>
+    <div class="detail-layout">
+        <aside class="detail-side">
+            <div class="card" id="request">
+                <p class="muted">Loading request...</p>
+            </div>
+        </aside>
+
+        <section class="chat-panel" aria-label="Conversation">
+            <div class="chat-head">
+                <div class="avatar" id="chatAvatar">S</div>
+                <div>
+                    <strong id="chatName">Support team</strong>
+                    <span class="chat-sub" id="chatSub">Conversation</span>
+                </div>
+            </div>
+
+            <div id="responses" class="chat-body" aria-live="polite">
+                <div class="chat-empty">Loading messages...</div>
+            </div>
+
+            <form id="responseForm" class="composer">
+                <label for="responseMessage" class="sr-only">Your message</label>
+                <textarea id="responseMessage" rows="1" placeholder="Type a message" required></textarea>
+                <button type="submit" class="send" aria-label="Send message">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4l17.5-7.5a1 1 0 0 0 0-1.8L3.4 3.6a1 1 0 0 0-1.4 1.2L4 11l9 1-9 1-2 6.2a1 1 0 0 0 1.4 1.2z"/></svg>
+                </button>
+            </form>
+        </section>
     </div>
 
-    <hr>
-
-    <h3>Conversation History</h3>
-
-    <div id="responses">
-        <p>Loading responses...</p>
-    </div>
-
-    <hr>
-
-    <h3>Send Response</h3>
-
-    <form id="responseForm">
-        <label for="responseMessage">
-            Your message
-        </label><br>
-
-        <textarea
-            id="responseMessage"
-            rows="5"
-            required
-        ></textarea>
-
-        <br><br>
-
-        <button type="submit">
-            Send Response
-        </button>
-    </form>
-
-    <p id="message"></p>
-
-    <p>
-        <a href="/customer/dashboard">
-            Back to Dashboard
-        </a>
-    </p>
+    <p id="message" class="alert toast" role="status"></p>
 </main>
 
 <script>
@@ -88,27 +81,22 @@ async function loadRequest() {
         document.getElementById(
             "request"
         ).innerHTML = `
-            <h3>${data.title}</h3>
-
-            <p>
-                ${data.description}
-            </p>
-
-            <p>
-                <strong>Status:</strong>
-                ${data.status}
-            </p>
-
-            <p>
-                <strong>Priority:</strong>
-                ${data.priority}
-            </p>
-
-            <p>
-                <strong>Category:</strong>
-                ${data.category}
-            </p>
+            <h1>${escapeHtml(data.title)}</h1>
+            <div class="badges" style="margin-top:12px">
+                ${statusBadge(data.status)}
+                ${priorityBadge(data.priority)}
+                <span class="badge badge-muted">${escapeHtml(data.category)}</span>
+            </div>
+            <p class="req-desc">${escapeHtml(data.description)}</p>
+            ${data.createdAt ? `<p class="meta">Opened ${escapeHtml(formatDate(data.createdAt))}</p>` : ""}
         `;
+
+        const agentName = data.assignedAgent && data.assignedAgent.name;
+
+        setChatHeader(
+            agentName || "Support team",
+            agentName ? "Assigned agent" : "Waiting for an agent to be assigned"
+        );
     } catch (error) {
         document.getElementById(
             "message"
@@ -149,34 +137,16 @@ async function loadResponses() {
             document.getElementById(
                 "responses"
             ).innerHTML =
-                "<p>No responses yet.</p>";
+                '<div class="chat-empty">No messages yet.<br>Send a message to start the conversation.</div>';
 
             return;
         }
 
         document.getElementById(
             "responses"
-        ).innerHTML = data.map(
-            item => `
-                <article>
-                    <strong>
-                        ${item.sender.name}
-                    </strong>
+        ).innerHTML = renderChat(data);
 
-                    <p>
-                        ${item.message}
-                    </p>
-
-                    <small>
-                        ${new Date(
-                            item.createdAt
-                        ).toLocaleString()}
-                    </small>
-
-                    <hr>
-                </article>
-            `
-        ).join("");
+        scrollChat();
     } catch (error) {
         document.getElementById(
             "responses"
